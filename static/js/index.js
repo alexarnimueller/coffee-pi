@@ -134,6 +134,11 @@ setInterval(function() {
          $("#btnTimerDisable").hide();
          $("#btnTimerEnable").show();
         }
+        if (resp.is_awake == true) {
+         $('#onoffSwich').bootstrapToggle('on');
+        } else {
+         $('#onoffSwich').bootstrapToggle('off');
+        }
         curtemp.append(new Date().getTime(), resp.temp);
         settemp.append(new Date().getTime(), resp.brewtemp);
         settempm.append(new Date().getTime(), resp.brewtemp-4);

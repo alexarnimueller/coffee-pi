@@ -45,10 +45,10 @@ def heating_loop(state):
             if config.pid_thresh < avgpid:  # to prevent overshoot slow heating at threshold
                 state['heating'] = True
                 heater.on()
-                sleep(0.5)
+                sleep(avgpid / config.boundary)
                 heater.off()
-                sleep(0.5)
-            elif 0 < avgpid < config.pid_thresh:
+                sleep(1. - avgpid / config.boundary)
+            elif 0 < avgpid < config.pid_thresh:  # slow heating when close to set point
                 state['heating'] = True
                 sleep(5)
                 heater.on()
@@ -62,12 +62,9 @@ def heating_loop(state):
 
 def pid_loop(state):
     i = 0
-    pidout = 1.
     pidhist = config.pid_hist_len * [0.]
-    avgpid = 0.
     temphist = config.temp_hist_len * [0.]
     temperr = config.temp_hist_len * [0]
-    avgtemp = 25.
     temp = 25.
     lastsettemp = state['brewtemp']
     lasttime = time()
@@ -131,9 +128,7 @@ def pid_loop(state):
         # print(time(), state)
 
         sleeptime = lasttime + config.time_sample - time()
-        if sleeptime < 0:
-            sleeptime = 0
-        sleep(sleeptime)
+        sleep(max(sleeptime, 0.))
         i += 1
         lasttime = time()
 
@@ -257,11 +252,9 @@ def server(state):
     def turnonoff():
         onoff = request.form.get('turnon')
         if onoff == "True":
-            state['is_awake'] = True
-            pwr_led.on()
+            wakeup(state)
         else:
-            state['is_awake'] = False
-            pwr_led.off()
+            gotosleep(state)
         return str(onoff)
 
     @app.route('/restart')
