@@ -19,18 +19,18 @@ time_sleep = '08:30'
 
 # sample time in seconds and history in iterations
 time_sample = 0.1
-pid_hist_len = 25
+pid_hist_len = 10
 temp_hist_len = 5
 
 # cold PID parameters: proportional, integral and derivative
-pidc_kp = 45
-pidc_ki = 130
+pidc_kp = 60
+pidc_ki = 100
 pidc_kd = 0.
 
 # warm PID parameters: proportional, integral and derivative
-pidw_kp = 33
-pidw_ki = 250
-pidw_kd = 40.0
+pidw_kp = 40
+pidw_ki = 150
+pidw_kd = 0.
 
 # port for the web server
 port = 8080
