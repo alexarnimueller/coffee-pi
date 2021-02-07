@@ -236,6 +236,15 @@ def server(state):
         state['sleep_time'] = sleep
         return str(sleep)
 
+    @app.route('/scheduler', methods=['POST'])
+    def set_sched():
+        sched = bool(request.forms.get('scheduler'))
+        if sched:
+            state['sched_enabled'] = True
+        else:
+            state['sched_enabled'] = False
+            state['is_awake'] = True
+
     @app.route('/turnonoff', methods=['POST'])
     def turnonoff():
         onoff = bool(request.forms.get('turnon'))
