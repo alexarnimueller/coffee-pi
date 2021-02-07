@@ -86,10 +86,17 @@ $(document).ready(function(){
   });
 
   $('#onoffSwich').change(function(e) {
-    $.post(
-      "/turnonoff",
-      { turnon: $('#onoffSwich').checked }
-    );
+    if ($('#onoffSwich').checked = true) {
+      $.post(
+        "/turnonoff",
+        { turnon: "True" }
+      );
+      } else {
+      $.post(
+        "/turnonoff",
+        { turnon: "False" }
+      );}
+    }
   });
 
   $("#btnTimerDisable").click(function(){

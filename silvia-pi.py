@@ -238,8 +238,8 @@ def server(state):
 
     @app.route('/scheduler', methods=['POST'])
     def set_sched():
-        sched = bool(request.forms.get('scheduler'))
-        if sched:
+        sched = request.forms.get('scheduler')
+        if sched == "True":
             state['sched_enabled'] = True
         else:
             state['sched_enabled'] = False
@@ -247,8 +247,8 @@ def server(state):
 
     @app.route('/turnonoff', methods=['POST'])
     def turnonoff():
-        onoff = bool(request.forms.get('turnon'))
-        if onoff:
+        onoff = request.forms.get('turnon')
+        if onoff == "True":
             state['is_awake'] = True
             pwr_led.on()
         else:
