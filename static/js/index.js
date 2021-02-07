@@ -67,34 +67,34 @@ $(document).ready(function(){
   $("#inputSetTemp").change(function(){
     $.post(
       "/brewtemp",
-      { settemp: $("#inputSetTemp").val() } 
+      { "settemp": $("#inputSetTemp").val() }
     );
   });
 
   $("#inputSleep").change(function(){
     $.post(
       "/setsleep",
-      { sleep: $("#inputSleep").val() }
+      { "sleep": $("#inputSleep").val() }
     );
   });
 
   $("#inputWake").change(function(){
     $.post(
       "/setwake",
-      { wake: $("#inputWake").val() }
+      { "wake": $("#inputWake").val() }
     );
   });
 
   $('#onoffSwich').change(function() {
     if ($('#onoffSwich').checked = true) {
-      $.post("/turnonoff", { turnon: "True" });
+      $.post("/turnonoff", { "turnon": "True" });
     } else {
-      $.post("/turnonoff", { turnon: "False" });
+      $.post("/turnonoff", { "turnon": "False" });
     }
   });
 
   $("#btnTimerDisable").click(function(){
-    $.post("/scheduler",{ scheduler: "False" });
+    $.post("/scheduler",{ "scheduler": "False" });
     $("#inputWake").hide();
     $("#labelWake").hide();
     $("#inputSleep").hide();
@@ -104,7 +104,7 @@ $(document).ready(function(){
   });
 
   $("#btnTimerEnable").click(function(){
-    $.post("/scheduler",{ scheduler: "True" });
+    $.post("/scheduler",{ "scheduler": "True" });
     $("#inputWake").show();
     $("#labelWake").show();
     $("#inputSleep").show();
