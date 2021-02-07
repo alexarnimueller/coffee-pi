@@ -125,7 +125,7 @@ def pid_loop(state):
         state['pidval'] = round(pidout, 2)
         state['avgpid'] = round(avgpid, 2)
 
-        print(time(), state)
+        # print(time(), state)
 
         sleeptime = lasttime + config.time_sample - time()
         if sleeptime < 0:
