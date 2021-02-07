@@ -17,19 +17,22 @@ from simple_pid import PID
 
 import config
 
-mainswitch = Button(config.pin_mainswitch)
 pwr_led = LED(config.pin_powerled, initial_value=config.initial_on)
 
 
 def power_loop(state):
+    mainswitch = Button(config.pin_mainswitch)
     while True:
         mainswitch.wait_for_press()
-        state['is_awake'] = not state['is_awake']
-        pwr_led.toggle()
+        if state['is_awake']:
+            gotosleep(state)
+        else:
+            wakeup(state)
+        sleep(1)
 
 
 def heating_loop(state):
-    heater = LED(config.pin_heat, active_high=False, initial_value=False)
+    heater = LED(config.pin_heat, initial_value=False)
 
     while True:
         avgpid = state['avgpid']
@@ -187,7 +190,11 @@ def scheduler(state):
 
 def server(state):
     app = Flask(__name__)
-
+    
+    import logging
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+    
     # TODO: type checks
 
     @app.route('/')
