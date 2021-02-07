@@ -26,13 +26,13 @@ temp_hist_len = 5
 boundary = 150.
 
 # cold PID parameters: proportional, integral and derivative
-pidc_kp = 5.
-pidc_ki = 0.5
+pidc_kp = 50.
+pidc_ki = 50.
 pidc_kd = 50.
 
 # warm PID parameters: proportional, integral and derivative
-pidw_kp = 4.
-pidw_ki = 0.4
+pidw_kp = 40.
+pidw_ki = 40.
 pidw_kd = 40.
 
 # port for the web server
