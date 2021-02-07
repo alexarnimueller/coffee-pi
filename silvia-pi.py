@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys
 import time
 from datetime import datetime
@@ -324,7 +327,7 @@ if __name__ == "__main__":
         lasti = curi
 
         if piderr > 9:
-            print('ERROR IN PID THREAD, RESTARTING')
+            print('ERROR IN PID THREAD')
             p.terminate()
 
         try:
@@ -335,7 +338,7 @@ if __name__ == "__main__":
             weberr += 1
 
         if weberr > 9:
-            print('ERROR IN WEB SERVER THREAD, RESTARTING')
+            print('ERROR IN WEB SERVER THREAD')
             r.terminate()
 
         if cpu.temperature > 70:
