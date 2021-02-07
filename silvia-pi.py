@@ -17,13 +17,15 @@ from simple_pid import PID
 
 import config
 
+mainswitch = Button(config.pin_mainswitch)
+pwr_led = LED(config.pin_powerled, initial_value=config.initial_on)
+
 
 def power_loop(state):
-    mainswitch = Button(config.pin_mainswitch)
     while True:
         mainswitch.wait_for_press()
         state['is_awake'] = not state['is_awake']
-        state['pwr_led'].toggle()
+        pwr_led.toggle()
 
 
 def heating_loop(state):
@@ -135,12 +137,12 @@ def pid_loop(state):
 
 def wakeup(state):
     state['is_awake'] = True
-    state['pwr_led'].on()
+    pwr_led.on()
 
 
 def gotosleep(state):
     state['is_awake'] = False
-    state['pwr_led'].off()
+    pwr_led.off()
 
 
 def scheduler(state):
@@ -237,10 +239,10 @@ def server(state):
         onoff = bool(request.forms.get('turnon'))
         if onoff:
             state['is_awake'] = True
-            state['pwr_led'].on()
+            pwr_led.on()
         else:
             state['is_awake'] = False
-            state['pwr_led'].off()
+            pwr_led.off()
 
     @app.route('/restart')
     def restart():
@@ -262,15 +264,14 @@ def server(state):
 if __name__ == "__main__":
     manager = Manager()
     pidstate = manager.dict()
-    pidstate['is_awake'] = False
-    pidstate['pwr_led'] = LED(config.pin_powerled, initial_value=pidstate['is_awake'])
-    pidstate['cpu'] = CPUTemperature()
+    pidstate['is_awake'] = config.initial_on
     pidstate['sched_enabled'] = config.schedule
     pidstate['sleep_time'] = config.time_sleep
     pidstate['wake_time'] = config.time_wake
     pidstate['i'] = 0
     pidstate['brewtemp'] = config.brew_temp
     pidstate['avgpid'] = 0.
+    cpu = CPUTemperature()
 
     print("Starting power button thread...")
     b = Process(target=power_loop, args=(pidstate,))
@@ -330,7 +331,7 @@ if __name__ == "__main__":
             print('ERROR IN WEB SERVER THREAD, RESTARTING')
             r.terminate()
 
-        if pidstate['cpu'].temperature > 70:
+        if cpu.temperature > 70:
             cpuhot += 1
             if cpuhot > 9:
                 print("CPU TOO HOT! SHUTTING DOWN")

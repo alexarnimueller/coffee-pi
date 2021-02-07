@@ -9,6 +9,9 @@ pin_powerled = 16
 # brew temperature in celsius
 brew_temp = 93
 
+# on off
+initial_on = False
+
 # weak-up and sleep times
 schedule = True
 time_wake = '06:50'
