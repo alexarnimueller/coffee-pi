@@ -22,6 +22,9 @@ time_sample = 0.1
 pid_hist_len = 10
 temp_hist_len = 5
 
+# PID max and min value
+boundary = 1000.
+
 # cold PID parameters: proportional, integral and derivative
 pidc_kp = 50
 pidc_ki = 50

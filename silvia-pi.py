@@ -20,6 +20,10 @@ import config
 pwr_led = LED(config.pin_powerled, initial_value=config.initial_on)
 
 
+def clamp(n, minn, maxn):
+    return max(min(maxn, n), minn)
+
+
 def power_loop(state):
     mainswitch = Button(config.pin_mainswitch)
     while True:
@@ -115,7 +119,7 @@ def pid_loop(state):
             lastsettemp = state['brewtemp']
 
         if i % config.pid_hist_len == 0:
-            pidout = pid(avgtemp)
+            pidout = clamp(pid(avgtemp), -config.boundary, config.boundary)
             pidhist.append(pidout)
             del pidhist[0]
             avgpid = sum(pidhist) / config.pid_hist_len
