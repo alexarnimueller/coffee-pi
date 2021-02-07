@@ -284,27 +284,27 @@ if __name__ == "__main__":
     cpu = CPUTemperature()
 
     print("Starting power button thread...")
-    b = Process(target=power_loop, args=pidstate)
+    b = Process(target=power_loop, args=(pidstate,))
     b.daemon = True
     b.start()
 
     print("Starting scheduler thread...")
-    s = Process(target=scheduler, args=pidstate)
+    s = Process(target=scheduler, args=(pidstate,))
     s.daemon = True
     s.start()
 
     print("Starting PID thread...")
-    p = Process(target=pid_loop, args=pidstate)
+    p = Process(target=pid_loop, args=(pidstate,))
     p.daemon = True
     p.start()
 
     print("Starting heat control thread...")
-    h = Process(target=heating_loop, args=pidstate)
+    h = Process(target=heating_loop, args=(pidstate,))
     h.daemon = True
     h.start()
 
     print("Starting server thread...")
-    r = Process(target=server, args=pidstate)
+    r = Process(target=server, args=(pidstate,))
     r.daemon = True
     r.start()
 
