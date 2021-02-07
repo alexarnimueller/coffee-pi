@@ -97,7 +97,7 @@ def pid_loop(state):
         except RuntimeError:
             del temperr[0]
             temperr.append(1)
-        if sum(temperr) >= config.temp_hist_len:
+        if sum(temperr) >= 5 * config.temp_hist_len:
             print("Temperature sensor error!")
             sys.exit()
 
