@@ -21,6 +21,7 @@ from simple_pid import PID
 import config
 
 pwr_led = LED(config.pin_powerled, initial_value=config.initial_on)
+heater = LED(config.pin_heat, initial_value=False)
 
 
 def wakeup(state):
@@ -30,6 +31,7 @@ def wakeup(state):
 
 def gotosleep(state):
     state['is_awake'] = False
+    heater.off()
     pwr_led.off()
 
 
@@ -45,8 +47,6 @@ def power_loop(state):
 
 
 def heating_loop(state):
-    heater = LED(config.pin_heat, initial_value=False)
-
     while True:
         avgpid = state['avgpid']
 
@@ -348,3 +348,5 @@ if __name__ == "__main__":
                 call(["shutdown", "-h", "now"])
 
         sleep(1)
+
+    gotosleep(pidstate)
