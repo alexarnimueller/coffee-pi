@@ -228,13 +228,13 @@ def server(state):
 
     @app.route('/setsleep', methods=['POST'])
     def set_sleep():
-        sleep = request.args.get('sleep')
+        slp = request.args.get('sleep')
         try:
-            datetime.strptime(sleep, '%H:%M')
+            datetime.strptime(slp, '%H:%M')
         except:
             abort(400, 'Invalid time format.')
-        state['sleep_time'] = sleep
-        return str(sleep)
+        state['sleep_time'] = slp
+        return str(slp)
 
     @app.route('/scheduler', methods=['POST'])
     def set_sched():
@@ -244,6 +244,7 @@ def server(state):
         else:
             state['sched_enabled'] = False
             state['is_awake'] = True
+        return str(sched)
 
     @app.route('/turnonoff', methods=['POST'])
     def turnonoff():
@@ -254,6 +255,7 @@ def server(state):
         else:
             state['is_awake'] = False
             pwr_led.off()
+        return str(onoff)
 
     @app.route('/restart')
     def restart():
