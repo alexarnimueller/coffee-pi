@@ -198,15 +198,15 @@ def server(state):
 
     @app.route('/brewtemp', methods=['POST'])
     def brewtemp():
-        # try:
-        settemp = int(request.args.get('settemp'))
-        if 85 <= settemp <= 105:
-            state['brewtemp'] = settemp
-            return str(settemp)
-        else:
-            abort(400, 'Temperature out of accepted range: 85 - 105 °C!')
-        # except:
-        #     abort(400, 'Invalid number for set temp.')
+        try:
+            settemp = int(request.args.get('settemp'))
+            if 85 <= settemp <= 105:
+                state['brewtemp'] = settemp
+                return str(settemp)
+            else:
+                abort(400, 'Temperature out of accepted range: 85 - 105 °C!')
+        except TypeError:
+            abort(400, 'Invalid number for set temp.')
 
     @app.route('/is_awake', methods=['GET'])
     def get_is_awake():
