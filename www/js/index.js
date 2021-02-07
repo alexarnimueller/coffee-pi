@@ -15,7 +15,7 @@ function refreshinputs() {
     url: "/allstats",
     timeout: 500,
     success: function ( resp ) {
-      $("#inputSetTemp").val( resp.settemp );
+      $("#inputSetTemp").val( resp.brewtemp );
       $("#inputSleep").val( resp.sleep_time );
       $("#inputWake").val( resp.wake_time );
     }
@@ -66,22 +66,29 @@ $(document).ready(function(){
 
   $("#inputSetTemp").change(function(){
     $.post(
-      "/settemp", 
+      "/brewtemp",
       { settemp: $("#inputSetTemp").val() } 
     );
   });
 
   $("#inputSleep").change(function(){
     $.post(
-      "/setsleep",
+      "/set_sleep",
       { sleep: $("#inputSleep").val() }
     );
   });
 
   $("#inputWake").change(function(){
     $.post(
-      "/setwake",
+      "/set_wake",
       { wake: $("#inputWake").val() }
+    );
+  });
+
+  $('#onoffSwich').change(function(e) {
+    $.post(
+      "/turnonoff",
+      { turnon: $('#onoffSwich').checked }
     );
   });
 
@@ -126,16 +133,16 @@ setInterval(function() {
          $("#btnTimerDisable").hide();
          $("#btnTimerEnable").show();
         }
-        curtemp.append(new Date().getTime(), resp.tempf);
-        settemp.append(new Date().getTime(), resp.settemp);
-        settempm.append(new Date().getTime(), resp.settemp-4);
-        settempp.append(new Date().getTime(), resp.settemp+4);
+        curtemp.append(new Date().getTime(), resp.temp);
+        settemp.append(new Date().getTime(), resp.brewtemp);
+        settempm.append(new Date().getTime(), resp.brewtemp-4);
+        settempp.append(new Date().getTime(), resp.brewtemp+4);
         pterm.append(new Date().getTime(), resp.pterm);
         iterm.append(new Date().getTime(), resp.iterm);
         dterm.append(new Date().getTime(), resp.dterm);
         pidval.append(new Date().getTime(), resp.pidval);
         avgpid.append(new Date().getTime(), resp.avgpid);
-        $("#curtemp").html(resp.tempf.toFixed(2));
+        $("#curtemp").html(resp.temp.toFixed(2));
         $("#pterm").html(resp.pterm.toFixed(2));
         $("#iterm").html(resp.iterm.toFixed(2));
         $("#dterm").html(resp.dterm.toFixed(2));

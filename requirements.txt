@@ -1,5 +1,5 @@
-bottle
-cheroot
-RPi.GPIO
-spidev
 schedule
+flask
+simple_pid
+gpiozero
+adafruit_max31855
