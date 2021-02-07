@@ -42,17 +42,18 @@ def heating_loop(state):
             heater.off()
             sleep(1)
         else:
-            if avgpid >= 100:  # check less often when far away from brew temp
+            if config.pid_thresh < avgpid:  # to prevent overshoot slow heating at threshold
                 state['heating'] = True
                 heater.on()
-                sleep(1)
-            elif 0 < avgpid < 100:  # check more often when closer to brew temp
-                state['heating'] = True
-                heater.on()
-                sleep(avgpid / 100.)
+                sleep(0.5)
                 heater.off()
-                sleep(1 - (avgpid / 100.))
-                state['heating'] = False
+                sleep(0.5)
+            elif 0 < avgpid < config.pid_thresh:
+                state['heating'] = True
+                sleep(5)
+                heater.on()
+                sleep(0.5)
+                heater.off() 
             else:  # turn off if temp higher than brew temp
                 heater.off()
                 state['heating'] = False
@@ -77,7 +78,7 @@ def pid_loop(state):
 
     sensor = MAX31855(SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO), DigitalInOut(board.D5))
     pid = PID(Kp=config.pidw_kp, Ki=config.pidw_ki, Kd=config.pidw_kd, setpoint=state['brewtemp'],
-              sample_time=config.time_sample, proportional_on_measurement=True,
+              sample_time=config.time_sample, proportional_on_measurement=False,
               output_limits=(-config.boundary, config.boundary))
 
     while True:
