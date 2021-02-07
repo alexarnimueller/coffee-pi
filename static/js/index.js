@@ -85,17 +85,11 @@ $(document).ready(function(){
     );
   });
 
-  $('#onoffSwich').change(function(e) {
+  $('#onoffSwich').change(function() {
     if ($('#onoffSwich').checked = true) {
-      $.post(
-        "/turnonoff",
-        { turnon: "True" }
-      );
-      } else {
-      $.post(
-        "/turnonoff",
-        { turnon: "False" }
-      );}
+      $.post("/turnonoff", { turnon: "True" });
+    } else {
+      $.post("/turnonoff", { turnon: "False" });
     }
   });
 
