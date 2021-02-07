@@ -7,7 +7,7 @@ pin_mainswitch = 12
 pin_powerled = 16
 
 # brew temperature in celsius
-brew_temp = 93
+brew_temp = 96
 
 # on off
 initial_on = False
@@ -23,14 +23,14 @@ pid_hist_len = 10
 temp_hist_len = 5
 
 # cold PID parameters: proportional, integral and derivative
-pidc_kp = 60
-pidc_ki = 100
-pidc_kd = 0.
+pidc_kp = 50
+pidc_ki = 50
+pidc_kd = 50.
 
 # warm PID parameters: proportional, integral and derivative
-pidw_kp = 40
-pidw_ki = 150
-pidw_kd = 0.
+pidw_kp = 50
+pidw_ki = 50
+pidw_kd = 50.
 
 # port for the web server
 port = 8080
