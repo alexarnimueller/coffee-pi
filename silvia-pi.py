@@ -85,6 +85,8 @@ def pid_loop(state):
             temp = sensor.temperature
             del temperr[0]
             temperr.append(0)
+            del temphist[0]
+            temphist.append(temp)
         except RuntimeError:
             del temperr[0]
             temperr.append(1)
@@ -92,15 +94,12 @@ def pid_loop(state):
             print("Temperature sensor error!")
             sys.exit()
 
-        if i % config.temp_hist_len == 0:
-            temphist.append(temp)
-            del temphist[0]
-            avgtemp = sum(temphist) / config.temp_hist_len
+        avgtemp = sum(temphist) / config.temp_hist_len
 
-        if avgtemp <= 75:
+        if avgtemp <= 60:
             lastcold = i
 
-        if avgtemp > 75:
+        if avgtemp > 60:
             lastwarm = i
 
         if iscold and (i - lastcold) * config.time_sample > 60 * 15:
@@ -115,11 +114,10 @@ def pid_loop(state):
             pid.setpoint = state['brewtemp']
             lastsettemp = state['brewtemp']
 
-        if i % config.pid_hist_len == 0:
-            pidout = pid(avgtemp)
-            pidhist.append(pidout)
-            del pidhist[0]
-            avgpid = sum(pidhist) / config.pid_hist_len
+        pidout = pid(avgtemp)
+        pidhist.append(pidout)
+        del pidhist[0]
+        avgpid = sum(pidhist) / config.pid_hist_len
 
         state['i'] = i
         state['temp'] = temp
