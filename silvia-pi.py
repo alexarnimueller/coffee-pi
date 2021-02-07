@@ -20,6 +20,16 @@ import config
 pwr_led = LED(config.pin_powerled, initial_value=config.initial_on)
 
 
+def wakeup(state):
+    state['is_awake'] = True
+    pwr_led.on()
+
+
+def gotosleep(state):
+    state['is_awake'] = False
+    pwr_led.off()
+
+
 def power_loop(state):
     mainswitch = Button(config.pin_mainswitch)
     while True:
@@ -37,27 +47,23 @@ def heating_loop(state):
     while True:
         avgpid = state['avgpid']
 
-        if not state['is_awake']:
-            state['heating'] = False
-            heater.off()
-            sleep(1)
-        else:
+        if state['is_awake']:
             if config.pid_thresh < avgpid:  # to prevent overshoot slow heating at threshold
-                state['heating'] = True
                 heater.on()
                 sleep(avgpid / config.boundary)
                 heater.off()
                 sleep(1. - avgpid / config.boundary)
             elif 0 < avgpid < config.pid_thresh:  # slow heating when close to set point
-                state['heating'] = True
                 sleep(5)
                 heater.on()
                 sleep(0.5)
                 heater.off()
-            else:  # turn off if temp higher than brew temp
+            else:  # turn off if negative output
                 heater.off()
-                state['heating'] = False
                 sleep(1)
+        else:
+            heater.off()
+            sleep(1)
 
 
 def pid_loop(state):
@@ -131,16 +137,6 @@ def pid_loop(state):
         sleep(max(sleeptime, 0.))
         i += 1
         lasttime = time()
-
-
-def wakeup(state):
-    state['is_awake'] = True
-    pwr_led.on()
-
-
-def gotosleep(state):
-    state['is_awake'] = False
-    pwr_led.off()
 
 
 def scheduler(state):
@@ -244,7 +240,6 @@ def server(state):
             state['sched_enabled'] = True
         else:
             state['sched_enabled'] = False
-            state['is_awake'] = True
         return str(sched)
 
     @app.route('/turnonoff', methods=['POST'])
@@ -286,27 +281,27 @@ if __name__ == "__main__":
     cpu = CPUTemperature()
 
     print("Starting power button thread...")
-    b = Process(target=power_loop, args=(pidstate,))
+    b = Process(target=power_loop, args=pidstate)
     b.daemon = True
     b.start()
 
     print("Starting scheduler thread...")
-    s = Process(target=scheduler, args=(pidstate,))
+    s = Process(target=scheduler, args=pidstate)
     s.daemon = True
     s.start()
 
     print("Starting PID thread...")
-    p = Process(target=pid_loop, args=(pidstate,))
+    p = Process(target=pid_loop, args=pidstate)
     p.daemon = True
     p.start()
 
     print("Starting heat control thread...")
-    h = Process(target=heating_loop, args=(pidstate,))
+    h = Process(target=heating_loop, args=pidstate)
     h.daemon = True
     h.start()
 
     print("Starting server thread...")
-    r = Process(target=server, args=(pidstate,))
+    r = Process(target=server, args=pidstate)
     r.daemon = True
     r.start()
 
