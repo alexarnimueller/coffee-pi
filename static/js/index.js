@@ -73,14 +73,14 @@ $(document).ready(function(){
 
   $("#inputSleep").change(function(){
     $.post(
-      "/set_sleep",
+      "/setsleep",
       { sleep: $("#inputSleep").val() }
     );
   });
 
   $("#inputWake").change(function(){
     $.post(
-      "/set_wake",
+      "/setwake",
       { wake: $("#inputWake").val() }
     );
   });
