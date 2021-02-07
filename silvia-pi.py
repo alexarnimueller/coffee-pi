@@ -198,6 +198,7 @@ def server(state):
 
     @app.route('/brewtemp', methods=['POST'])
     def brewtemp():
+        print(request.args)
         # try:
         settemp = int(request.args.get('settemp'))
         if 85 <= settemp <= 105:
