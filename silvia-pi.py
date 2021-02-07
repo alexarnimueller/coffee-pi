@@ -20,10 +20,6 @@ import config
 pwr_led = LED(config.pin_powerled, initial_value=config.initial_on)
 
 
-def clamp(n, minn, maxn):
-    return max(min(maxn, n), minn)
-
-
 def power_loop(state):
     mainswitch = Button(config.pin_mainswitch)
     while True:
@@ -81,7 +77,8 @@ def pid_loop(state):
 
     sensor = MAX31855(SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO), DigitalInOut(board.D5))
     pid = PID(Kp=config.pidw_kp, Ki=config.pidw_ki, Kd=config.pidw_kd, setpoint=state['brewtemp'],
-              sample_time=config.time_sample)
+              sample_time=config.time_sample, proportional_on_measurement=True,
+              output_limits=(-config.boundary, config.boundary))
 
     while True:
         try:
@@ -119,7 +116,7 @@ def pid_loop(state):
             lastsettemp = state['brewtemp']
 
         if i % config.pid_hist_len == 0:
-            pidout = clamp(pid(avgtemp), -config.boundary, config.boundary)
+            pidout = pid(avgtemp)
             pidhist.append(pidout)
             del pidhist[0]
             avgpid = sum(pidhist) / config.pid_hist_len

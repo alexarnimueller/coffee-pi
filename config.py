@@ -22,18 +22,18 @@ time_sample = 0.1
 pid_hist_len = 10
 temp_hist_len = 5
 
-# PID max and min value
-boundary = 1000.
+# PID output limit (+/-)
+boundary = 150.
 
 # cold PID parameters: proportional, integral and derivative
-pidc_kp = 50
-pidc_ki = 50
-pidc_kd = 50.
+pidc_kp = 0.1
+pidc_ki = 4.
+pidc_kd = 0.
 
 # warm PID parameters: proportional, integral and derivative
-pidw_kp = 50
-pidw_ki = 50
-pidw_kd = 50.
+pidw_kp = 0.1
+pidw_ki = 4.
+pidw_kd = -0.5
 
 # port for the web server
 port = 8080
