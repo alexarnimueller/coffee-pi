@@ -53,7 +53,7 @@ def heating_loop(state):
                 sleep(5)
                 heater.on()
                 sleep(0.5)
-                heater.off() 
+                heater.off()
             else:  # turn off if temp higher than brew temp
                 heater.off()
                 state['heating'] = False
@@ -149,7 +149,8 @@ def scheduler(state):
     last_sched_switch = False
 
     while True:
-        if last_wake != state['wake_time'] or last_sleep != state['sleep_time'] or last_sched_switch != state['sched_enabled']:
+        if last_wake != state['wake_time'] or last_sleep != state['sleep_time'] or \
+                last_sched_switch != state['sched_enabled']:
             schedule.clear()
 
             if state['sched_enabled']:
@@ -185,12 +186,10 @@ def scheduler(state):
 
 def server(state):
     app = Flask(__name__)
-    
+
     import logging
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
-    
-    # TODO: type checks
 
     @app.route('/')
     @app.route('/home')
@@ -202,11 +201,11 @@ def server(state):
     def brewtemp():
         try:
             settemp = int(request.form.get('settemp'))
-            if 85 <= settemp <= 105:
+            if 80 <= settemp <= 120:
                 state['brewtemp'] = settemp
                 return str(settemp)
             else:
-                abort(400, 'Temperature out of accepted range: 85 - 105 °C!')
+                abort(400, 'Temperature out of accepted range: 80 - 120 °C!')
         except TypeError:
             abort(400, 'Invalid number for set temp.')
 
@@ -223,7 +222,7 @@ def server(state):
         wake = request.form.get('wake')
         try:
             datetime.strptime(wake, '%H:%M')
-        except:
+        except ValueError:
             abort(400, 'Invalid time format.')
         state['wake_time'] = wake
         return str(wake)
@@ -233,7 +232,7 @@ def server(state):
         slp = request.form.get('sleep')
         try:
             datetime.strptime(slp, '%H:%M')
-        except:
+        except ValueError:
             abort(400, 'Invalid time format.')
         state['sleep_time'] = slp
         return str(slp)
