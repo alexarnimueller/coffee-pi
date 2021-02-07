@@ -199,7 +199,7 @@ def server(state):
     @app.route('/brewtemp', methods=['POST'])
     def brewtemp():
         try:
-            settemp = int(request.args.get('settemp'))
+            settemp = int(request.form.get('settemp'))
             if 85 <= settemp <= 105:
                 state['brewtemp'] = settemp
                 return str(settemp)
@@ -218,7 +218,7 @@ def server(state):
 
     @app.route('/setwake', methods=['POST'])
     def set_wake():
-        wake = request.args.get('wake')
+        wake = request.form.get('wake')
         try:
             datetime.strptime(wake, '%H:%M')
         except:
@@ -228,7 +228,7 @@ def server(state):
 
     @app.route('/setsleep', methods=['POST'])
     def set_sleep():
-        slp = request.args.get('sleep')
+        slp = request.form.get('sleep')
         try:
             datetime.strptime(slp, '%H:%M')
         except:
@@ -238,7 +238,7 @@ def server(state):
 
     @app.route('/scheduler', methods=['POST'])
     def set_sched():
-        sched = request.args.get('scheduler')
+        sched = request.form.get('scheduler')
         if sched == "True":
             state['sched_enabled'] = True
         else:
@@ -248,7 +248,7 @@ def server(state):
 
     @app.route('/turnonoff', methods=['POST'])
     def turnonoff():
-        onoff = request.args.get('turnon')
+        onoff = request.form.get('turnon')
         if onoff == "True":
             state['is_awake'] = True
             pwr_led.on()
