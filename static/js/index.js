@@ -18,6 +18,11 @@ function refreshinputs() {
       $("#inputSetTemp").val( resp.brewtemp );
       $("#inputSleep").val( resp.sleep_time );
       $("#inputWake").val( resp.wake_time );
+      if (resp.is_awake == true) {
+       $('#onoffSwich').bootstrapToggle('on');
+      } else {
+       $('#onoffSwich').bootstrapToggle('off');
+      }
     }
   });
 }
@@ -133,11 +138,6 @@ setInterval(function() {
          $("#btnTimerSet").hide();
          $("#btnTimerDisable").hide();
          $("#btnTimerEnable").show();
-        }
-        if (resp.is_awake == true) {
-         $('#onoffSwich').bootstrapToggle('on');
-        } else {
-         $('#onoffSwich').bootstrapToggle('off');
         }
         curtemp.append(new Date().getTime(), resp.temp);
         settemp.append(new Date().getTime(), resp.brewtemp);

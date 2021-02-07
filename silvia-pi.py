@@ -212,7 +212,7 @@ def server(state):
 
     @app.route('/is_awake', methods=['GET'])
     def get_is_awake():
-        return str(state['is_awake'])
+        return jsonify({"awake": state['is_awake']})
 
     @app.route('/allstats', methods=['GET'])
     def allstats():
