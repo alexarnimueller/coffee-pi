@@ -18,19 +18,19 @@ function refreshinputs() {
       $("#inputSetTemp").val( resp.brewtemp );
       $("#inputSleep").val( resp.sleep_time );
       $("#inputWake").val( resp.wake_time );
-/*      if (resp.is_awake == true) {
-       $('#onoffSwich').bootstrapToggle('on');
+      if (resp.is_awake == true) {
+        $('#onoffSwich').bootstrapToggle('on');
       } else {
-       $('#onoffSwich').bootstrapToggle('off');
-      }*/
+        $('#onoffSwich').bootstrapToggle('off');
+      }
     }
   });
 }
 
-function resettimer() {
+/* function resettimer() {
   clearTimeout(timeout);
   timeout = setTimeout(refreshinputs, 30000);
-}
+} */
 
 function onresize() {
     var h;
@@ -53,21 +53,27 @@ function onresize() {
 }
 
 $(document).ready(function(){
-  resettimer();
-  $(this).mousemove(resettimer);
-  $(this).keypress(resettimer);
+  // resettimer();
+  // $(this).keypress(resettimer);
 
   onresize();
   $(window).resize(onresize);
 
   createTimeline();
+  refreshinputs();
+
+  $('#onoffSwich').change(function() {
+    if ($('#onoffSwich').checked = true) {
+      $.post("/turnonoff", { "turnon": "True" });
+    } else {
+      $.post("/turnonoff", { "turnon": "False" });
+    }
+  });
 
   $(".adv").hide();
   $("#toggleadv").click(function(){
     $(".adv").toggle();
   });
-
-  refreshinputs();
 
   $("#inputSetTemp").change(function(){
     $.post(
@@ -88,14 +94,6 @@ $(document).ready(function(){
       "/setwake",
       { "wake": $("#inputWake").val() }
     );
-  });
-
-  $('#onoffSwich').change(function() {
-    if ($('#onoffSwich').checked = true) {
-      $.post("/turnonoff", { "turnon": "True" });
-    } else {
-      $.post("/turnonoff", { "turnon": "False" });
-    }
   });
 
   $("#btnTimerDisable").click(function(){
@@ -161,7 +159,7 @@ setInterval(function() {
     });
     lastreqdone = 0;
   }
-}, 100);
+}, 333);
 
 function createTimeline() {
   var chart = new SmoothieChart({grid:{verticalSections:3},minValueScale:1.05,maxValueScale:1.05});
