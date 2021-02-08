@@ -153,8 +153,8 @@ def scheduler(state):
             schedule.clear()
 
             if state['sched_enabled']:
-                schedule.every().day.at(state['sleep_time']).do(gotosleep, 1, state)
-                schedule.every().day.at(state['wake_time']).do(wakeup, 1, state)
+                schedule.every().day.at(state['sleep_time']).do(gotosleep, state)
+                schedule.every().day.at(state['wake_time']).do(wakeup, state)
 
                 nowtm = float(datetime.now().hour) + float(datetime.now().minute) / 60.
                 sleeptm = state['sleep_time'].split(":")

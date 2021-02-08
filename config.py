@@ -7,7 +7,7 @@ pin_mainswitch = 12
 pin_powerled = 16
 
 # brew temperature in celsius
-brew_temp = 90
+brew_temp = 93
 
 # on off
 initial_on = False
@@ -19,12 +19,12 @@ time_sleep = '08:30'
 
 # sample time in seconds and history in iterations
 time_sample = 0.1
-pid_hist_len = 2
-temp_hist_len = 2
+pid_hist_len = 3
+temp_hist_len = 3
 
 # PID output limit
-boundary = 150.
-pid_thresh = 100.
+boundary = 1000.
+pid_thresh = 250.
 
 # cold PID parameters: proportional, integral and derivative
 pidc_kp = 60.

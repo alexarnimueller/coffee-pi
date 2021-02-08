@@ -1,4 +1,5 @@
 schedule
+board
 flask
 simple_pid
 gpiozero
