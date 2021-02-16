@@ -19,18 +19,20 @@ function refreshinputs() {
       $("#inputSleep").val( resp.sleep_time );
       $("#inputWake").val( resp.wake_time );
       if (resp.is_awake == true) {
-        $('#onoffSwich').bootstrapToggle('on');
+        $('#onoffSwich').addClass("btn-success");
+        $('#onoffSwich').removeClass("btn-danger");
       } else {
-        $('#onoffSwich').bootstrapToggle('off');
+        $('#onoffSwich').addClass("btn-danger");
+        $('#onoffSwich').removeClass("btn-success");
       }
     }
   });
 }
 
-/* function resettimer() {
+function resettimer() {
   clearTimeout(timeout);
   timeout = setTimeout(refreshinputs, 30000);
-} */
+}
 
 function onresize() {
     var h;
@@ -39,7 +41,6 @@ function onresize() {
     } else {
       h = $(window).height()*.50;
     }
-
     $("#chart").attr("width", $("#fullrow").width()-30);
     $("#chart").attr("height", h);
     $("#pidchart").attr("width", $("#fullrow").width()-30);
@@ -53,8 +54,8 @@ function onresize() {
 }
 
 $(document).ready(function(){
-  // resettimer();
-  // $(this).keypress(resettimer);
+  resettimer();
+  $(this).keypress(resettimer);
 
   onresize();
   $(window).resize(onresize);
@@ -62,11 +63,15 @@ $(document).ready(function(){
   createTimeline();
   refreshinputs();
 
-  $('#onoffSwich').change(function() {
-    if ($('#onoffSwich').checked = true) {
-      $.post("/turnonoff", { "turnon": "True" });
+  $('#onoffSwich').click(function() {
+    if ($('#onoffSwich').hasClass('btn-success')) {
+      $.get("/turnoff", function(data) {
+        console.log("Response: " + data);
+      });
     } else {
-      $.post("/turnonoff", { "turnon": "False" });
+      $.get("/turnon", function(data) {
+        console.log("Response: " + data);
+      });
     }
   });
 
@@ -137,6 +142,20 @@ setInterval(function() {
          $("#btnTimerDisable").hide();
          $("#btnTimerEnable").show();
         }
+        if (resp.is_awake == true) {
+          $('#onoffSwich').addClass("btn-success");
+          $('#onoffSwich').removeClass("btn-danger");
+        } else {
+          $('#onoffSwich').addClass("btn-danger");
+          $('#onoffSwich').removeClass("btn-success");
+        }
+	if (resp.heating == true) {
+	  $("#heatStatus").removeClass("btn-dark");
+	  $("#heatStatus").addClass("btn-warning");
+	} else {
+	  $("#heatStatus").removeClass("btn-warning");
+	  $("#heatStatus").addClass("btn-dark");
+	}
         curtemp.append(new Date().getTime(), resp.temp);
         settemp.append(new Date().getTime(), resp.brewtemp);
         settempm.append(new Date().getTime(), resp.brewtemp-4);

@@ -15,26 +15,25 @@ initial_on = False
 # weak-up and sleep times
 schedule = True
 time_wake = '06:50'
-time_sleep = '08:30'
+time_sleep = '08:45'
 
 # sample time in seconds and history in iterations
 time_sample = 0.1
-pid_hist_len = 3
-temp_hist_len = 3
+pid_hist_len = 5
+temp_hist_len = 5
 
 # PID output limit
-boundary = 1000.
-pid_thresh = 250.
+boundary = 200.
 
 # cold PID parameters: proportional, integral and derivative
-pidc_kp = 60.
+pidc_kp = 10.
 pidc_ki = 0.
 pidc_kd = 0.
 
 # warm PID parameters: proportional, integral and derivative
-pidw_kp = 60.
-pidw_ki = 180.
-pidw_kd = 10.
+pidw_kp = 10.
+pidw_ki = 1
+pidw_kd = 5.
 
 # port for the web server
 port = 8080

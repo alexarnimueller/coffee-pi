@@ -9,12 +9,14 @@
     <title>Silvia Pi</title>
     <link rel="stylesheet" href="../static/css/bootstrap.css">
     <link rel="stylesheet" href="../static/css/bootstrap-theme.css">
-    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/8d732964ea.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script type="text/javascript" src="../static/js/smoothie.js"></script>
+    <script type="text/javascript" src="../static/js/index.js"></script>
     <script type="text/javascript" src="../static/js/jquery.js"></script>
     <script type="text/javascript" src="../static/js/bootstrap.js"></script>
-    <script type="text/javascript" src="../static/js/index.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
+    <!--    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet"> -->
+    <!--    <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script> -->
   </head>
   <body>
   <div class="container">
@@ -27,7 +29,8 @@
       </div>
       <div class="row">
         <div class="col-xs-6">
-          <input id="onoffSwich" type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="danger">
+		<button id="onoffSwich" class='btn mr-6'><i class="fa fa-power-off"></i></button>
+		<button id="heatStatus" class='btn disabled'><i class="fa fa-bolt"></i></button>
         </div>
         <div class="col-xs-6">
           <h5 class="text-right">Temp: <span id="curtemp">00.00</span> °C</h5>
@@ -49,9 +52,9 @@
         <div class="col-sm-6">
           <form class="form-inline" onsubmit="return false">
             <div class="form-group">
-              <label id="labelWake" for="inputWake">Wakeup: </label>
+              <label id="labelWake" for="inputWake">ON: </label>
               <input type="time" class="form-control" id="inputWake" style="width:120px">
-              <label id="labelSleep" for="inputSleep">Sleep: </label>
+              <label id="labelSleep" for="inputSleep">OFF: </label>
               <input type="time" class="form-control" id="inputSleep" style="width:120px">
               <button id="btnTimerDisable" class="btn btn-danger" style="display:none">Disable Timer</button>
               <button id="btnTimerEnable" class="btn btn-primary" style="display:none">Enable Timer</button>

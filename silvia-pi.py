@@ -31,6 +31,7 @@ def wakeup(state):
 
 def gotosleep(state):
     state['is_awake'] = False
+    state['heating'] = False
     heater.off()
     pwr_led.off()
 
@@ -39,31 +40,27 @@ def power_loop(state):
     mainswitch = Button(config.pin_mainswitch)
     while True:
         mainswitch.wait_for_press()
+        sleep(0.25)
         if state['is_awake']:
             gotosleep(state)
         else:
             wakeup(state)
-        sleep(1)
-
+        sleep(0.75)
 
 def heating_loop(state):
     while True:
-        avgpid = state['avgpid']
-
         if state['is_awake']:
-            if config.pid_thresh < avgpid:  # to prevent overshoot slow heating at threshold
+            avgpid = state['avgpid']
+            if 0 < avgpid:  # heat if pid positive
+                state['heating'] = True
                 heater.on()
                 sleep(avgpid / config.boundary)
                 heater.off()
                 sleep(1. - avgpid / config.boundary)
-            elif 0 < avgpid < config.pid_thresh:  # slow heating when close to set point
-                sleep(5)
-                heater.on()
-                sleep(0.5)
-                heater.off()
             else:  # turn off if negative output
+                state['heating'] = False
                 heater.off()
-                sleep(1)
+                sleep(-avgpid / config.boundary)
         else:
             heater.off()
             sleep(1)
@@ -77,13 +74,9 @@ def pid_loop(state):
     temp = 25.
     lastsettemp = state['brewtemp']
     lasttime = time()
-    iscold = True
-    iswarm = False
-    lastcold = 0
-    lastwarm = 0
 
     sensor = MAX31855(SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO), DigitalInOut(board.D5))
-    pid = PID(Kp=config.pidw_kp, Ki=config.pidw_ki, Kd=config.pidw_kd, setpoint=state['brewtemp'],
+    pid = PID(Kp=config.pidc_kp, Ki=config.pidc_ki, Kd=config.pidc_kd, setpoint=state['brewtemp'],
               sample_time=config.time_sample, proportional_on_measurement=False,
               output_limits=(-config.boundary, config.boundary))
 
@@ -99,23 +92,16 @@ def pid_loop(state):
             temperr.append(1)
         if sum(temperr) >= 5 * config.temp_hist_len:
             print("Temperature sensor error!")
-            sys.exit()
+            call(["killall", "python3"])
 
         avgtemp = sum(temphist) / config.temp_hist_len
 
-        if avgtemp <= 60:
-            lastcold = i
-
-        if avgtemp > 60:
-            lastwarm = i
-
-        if iscold and (i - lastcold) * config.time_sample > 60 * 15:
+        if avgtemp >= 80:
+            pid.reset()
             pid.tunings = (config.pidw_kp, config.pidw_ki, config.pidw_kd)
-            iscold = False
-
-        if iswarm and (i - lastwarm) * config.time_sample > 60 * 15:
+        else:
+            pid.reset()
             pid.tunings = (config.pidc_kp, config.pidc_ki, config.pidc_kd)
-            iscold = True
 
         if state['brewtemp'] != lastsettemp:
             pid.setpoint = state['brewtemp']
@@ -128,13 +114,10 @@ def pid_loop(state):
 
         state['i'] = i
         state['temp'] = temp
-        state['iscold'] = iscold
         state['pterm'], state['iterm'], state['dterm'] = pid.components
         state['avgtemp'] = round(avgtemp, 2)
         state['pidval'] = round(pidout, 2)
         state['avgpid'] = round(avgpid, 2)
-
-        # print(time(), state)
 
         sleeptime = lasttime + config.time_sample - time()
         sleep(max(sleeptime, 0.))
@@ -241,19 +224,22 @@ def server(state):
         sched = request.form.get('scheduler')
         if sched == "True":
             state['sched_enabled'] = True
+            sleep(0.25)
         else:
             state['sched_enabled'] = False
+            sleep(0.25)
         return str(sched)
 
-    @app.route('/turnonoff', methods=['POST'])
-    def turnonoff():
-        onoff = request.form.get('turnon')
-        if onoff == "True":
-            wakeup(state)
-        else:
-            gotosleep(state)
-        return str(onoff)
+    @app.route('/turnon', methods=['GET'])
+    def turnon():
+        wakeup(state)
+        return str("On")
 
+    @app.route('/turnoff', methods=['GET'])
+    def turnoff():
+        gotosleep(state)
+        return str("Off")
+    
     @app.route('/restart')
     def restart():
         call(["reboot"])
@@ -275,6 +261,7 @@ if __name__ == "__main__":
     manager = Manager()
     pidstate = manager.dict()
     pidstate['is_awake'] = config.initial_on
+    pidstate['heating'] = False
     pidstate['sched_enabled'] = config.schedule
     pidstate['sleep_time'] = config.time_sleep
     pidstate['wake_time'] = config.time_wake
@@ -283,16 +270,16 @@ if __name__ == "__main__":
     pidstate['avgpid'] = 0.
     cpu = CPUTemperature()
 
-    print("Starting power button thread...")
-    b = Process(target=power_loop, args=(pidstate,))
-    b.daemon = True
-    b.start()
-
     print("Starting scheduler thread...")
     s = Process(target=scheduler, args=(pidstate,))
     s.daemon = True
     s.start()
-
+    
+    print("Starting power button thread...")
+    b = Process(target=power_loop, args=(pidstate,))
+    b.daemon = True
+    b.start()
+    
     print("Starting PID thread...")
     p = Process(target=pid_loop, args=(pidstate,))
     p.daemon = True
@@ -349,4 +336,5 @@ if __name__ == "__main__":
 
         sleep(1)
 
+    call(["killall", "python3"])
     gotosleep(pidstate)
