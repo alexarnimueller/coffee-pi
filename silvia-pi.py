@@ -96,12 +96,10 @@ def pid_loop(state):
 
         avgtemp = sum(temphist) / config.temp_hist_len
 
-        if avgtemp >= 80:
-            pid.reset()
-            pid.tunings = (config.pidw_kp, config.pidw_ki, config.pidw_kd)
-        else:
-            pid.reset()
+        if avgtemp <= 0.9 * state['brewtemp']:
             pid.tunings = (config.pidc_kp, config.pidc_ki, config.pidc_kd)
+        else:
+            pid.tunings = (config.pidw_kp, config.pidw_ki, config.pidw_kd)
 
         if state['brewtemp'] != lastsettemp:
             pid.setpoint = state['brewtemp']
@@ -139,25 +137,17 @@ def scheduler(state):
                 schedule.every().day.at(state['sleep_time']).do(gotosleep, state)
                 schedule.every().day.at(state['wake_time']).do(wakeup, state)
 
-                nowtm = float(datetime.now().hour) + float(datetime.now().minute) / 60.
+                nowtm = datetime.now().hour + datetime.now().minute / 60.
                 sleeptm = state['sleep_time'].split(":")
                 sleeptm = float(sleeptm[0]) + float(sleeptm[1]) / 60.
                 waketm = state['wake_time'].split(":")
                 waketm = float(waketm[0]) + float(waketm[1]) / 60.
 
-                if waketm < sleeptm:
-                    if waketm <= nowtm < sleeptm:
-                        wakeup(state)
-                    else:
-                        gotosleep(state)
-                elif waketm > sleeptm:
-                    if waketm > nowtm >= sleeptm:
-                        gotosleep(state)
-                    else:
-                        wakeup(state)
-            else:
-                wakeup(state)
-
+                if waketm <= nowtm < sleeptm:
+                    wakeup(state)
+                else:
+                    gotosleep(state)
+        
         last_wake = state['wake_time']
         last_sleep = state['sleep_time']
         last_sched_switch = state['sched_enabled']
