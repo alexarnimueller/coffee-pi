@@ -16,10 +16,13 @@ from busio import SPI
 from digitalio import DigitalInOut
 from flask import Flask, jsonify, request, render_template, abort
 from gpiozero import LED, CPUTemperature, Button
+import RPi.GPIO as GPIO
 from simple_pid import PID
 
 import config
 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(config.pin_mainswitch, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 pwr_led = LED(config.pin_powerled, initial_value=config.initial_on)
 heater = LED(config.pin_heat, initial_value=False)
 
@@ -36,6 +39,19 @@ def gotosleep(state):
     pwr_led.off()
 
 
+def new_pwr_loop(state):
+    while True:
+        tick = 0
+        while GPIO.input(config.pin_mainswitch) == GPIO.LOW:
+            tick += 1
+            sleep(0.1)
+        if tick >= 2:
+            if state['is_awake']:
+                gotosleep(state)
+            else:
+                wakeup(state)
+
+
 def power_loop(state):
     mainswitch = Button(config.pin_mainswitch)
     while True:
@@ -46,6 +62,7 @@ def power_loop(state):
         else:
             wakeup(state)
         sleep(0.75)
+
 
 def heating_loop(state):
     while True:
@@ -153,7 +170,7 @@ def scheduler(state):
         last_sched_switch = state['sched_enabled']
 
         schedule.run_pending()
-        sleep(1)
+        sleep(5)
 
 
 def server(state):
@@ -266,7 +283,7 @@ if __name__ == "__main__":
     s.start()
     
     print("Starting power button thread...")
-    b = Process(target=power_loop, args=(pidstate,))
+    b = Process(target=new_pwr_loop, args=(pidstate,))
     b.daemon = True
     b.start()
     
