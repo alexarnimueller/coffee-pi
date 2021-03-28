@@ -39,7 +39,7 @@ def gotosleep(state):
     pwr_led.off()
 
 
-def new_pwr_loop(state):
+def power_loop(state):
     while True:
         tick = 0
         while GPIO.input(config.pin_mainswitch) == GPIO.LOW:
@@ -50,18 +50,6 @@ def new_pwr_loop(state):
                 gotosleep(state)
             else:
                 wakeup(state)
-
-
-def power_loop(state):
-    mainswitch = Button(config.pin_mainswitch)
-    while True:
-        mainswitch.wait_for_press()
-        sleep(0.25)
-        if state['is_awake']:
-            gotosleep(state)
-        else:
-            wakeup(state)
-        sleep(0.75)
 
 
 def heating_loop(state):
@@ -283,7 +271,7 @@ if __name__ == "__main__":
     s.start()
     
     print("Starting power button thread...")
-    b = Process(target=new_pwr_loop, args=(pidstate,))
+    b = Process(target=power_loop, args=(pidstate,))
     b.daemon = True
     b.start()
     
