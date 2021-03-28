@@ -29,17 +29,18 @@ A Raspberry Pi modification to the Rancilio Silvia Espresso Machine implementing
 
 #### GPIO Connection Table
 |GPIO Pin |Destination |
-|3.3 V | VCC MAX 31855K |
-|Ground | Solid State Relais - |
-|Ground | GND MAX 31855K |
-|Ground | Main Power Switch - |
-|Ground | Green Power LED - |
-|GPIO 4 | Solid State Relais + |
-|GPIO 8 | CS MAX 31855K |
-|GPIO 9 | SO MAX 31855K |
-|GPIO 11 | SCK MAX 31855K |
-|GPIO 12 | Main Power Switch + |
-|GPIO 16 | Green Power LED + |
+--- | --- |
+|3.3 V|VCC MAX 31855K |
+|Ground| Solid State Relais - |
+|Ground| GND MAX 31855K |
+|Ground| Main Power Switch - |
+|Ground| Green Power LED - |
+|GPIO 4| Solid State Relais + |
+|GPIO 8| CS MAX 31855K |
+|GPIO 9| SO MAX 31855K |
+|GPIO 11| SCK MAX 31855K |
+|GPIO 12| Main Power Switch + |
+|GPIO 16| Green Power LED + |
 
 
 
