@@ -44,7 +44,7 @@ A Raspberry Pi modification to the Rancilio Silvia Espresso Machine implementing
 
 
 
-#### silvia-pi Software Installation Instructions
+#### coffee-pi Software Installation Instructions
 First, install Raspbian and configure Wi-Fi and timezone.
 
 Then, execute the following code in the pi bash shell:
@@ -57,14 +57,29 @@ sudo bash -c 'echo "dtparam=spi=on" >> /boot/config.txt'
 sudo reboot
 ````
 
-After the reboot:
+Then install berryconda3 (change the default directory to `/home/pi/miniconda3`):
 ````
-sudo git clone https://github.com/alexarnimueller/coffee-pi.git /home/pi/coffee-pi
-sudo /home/pi/coffee-pi/setup.sh
+wget https://github.com/jjhelmus/berryconda/releases/download/v2.0.0/Berryconda3-2.0.0-Linux-armv7l.sh
+sudo /bin/bash Berryconda3-2.0.0-Linux-armv7l.sh
 ````
-This last step will download the necessariy python libraries and install the silvia-pi software in /root/silvia-pi
 
-It also creates an entry in /etc/rc.local to start the software on every boot.
+After a reboot, clone the coffee-pi repo:
+````
+git clone https://github.com/alexarnimueller/coffee-pi.git /home/pi/coffee-pi
+cd /home/pi/coffee-pi
+````
+
+Then run the following command to create a new conda environment and install the necessary packages:
+````
+conda create env -f environment.yml
+pip install poetry
+poetry install
+````
+
+Finally, edit your crontab to run the coffee-pi script at reboot by typing `crontab -e` and adding the following line at the bottom of the file:
+````
+@reboot /home/pi/miniconda3/envs/coffee-pi/bin/python /home/pi/coffee-pi/app/app.py
+````
 
 #### API Documentation
 

@@ -6,7 +6,7 @@ authors = ["Alex Müller <alexarnimueller@protonmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.6"
 schedule = "^1.0"
 board = "^1.0"
 flask = "^1.0"
