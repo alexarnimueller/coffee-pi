@@ -1,6 +1,0 @@
-schedule
-board
-flask
-simple_pid
-gpiozero
-adafruit_max31855

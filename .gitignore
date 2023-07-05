@@ -1,6 +1,4 @@
-silvia-pi.log*
-*.log
-*.pyc
-PID.*
-*.debug.js
 .idea/
+.vscode/
+*.pyc
+.DS_Store

@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "coffe-pi"
+version = "0.1.0"
+description = ""
+authors = ["Alex Müller <alexarnimueller@protonmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+schedule = "^1.0"
+board = "^1.0"
+flask = "^1.0"
+simple_pid = "^0.2"
+gpiozero = "^1.5"
+adafruit_max31855 = "^1.6"
+
+[tool.poetry.dev-dependencies]
+black = "^23.3"
+isort = "^4.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
