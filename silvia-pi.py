@@ -323,9 +323,9 @@ if __name__ == "__main__":
             print('ERROR IN WEB SERVER THREAD')
             r.terminate()
 
-        if cpu.temperature > 70:
+        if cpu.temperature > 75:
             cpuhot += 1
-            if cpuhot > 9:
+            if cpuhot > 29:
                 print("CPU TOO HOT! SHUTTING DOWN")
                 call(["shutdown", "-h", "now"])
 

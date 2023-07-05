@@ -32,7 +32,7 @@ pidc_kd = 0.
 
 # warm PID parameters: proportional, integral and derivative
 pidw_kp = 50.
-pidw_ki = 0.25
+pidw_ki = 0.
 pidw_kd = 10.
 
 # port for the web server
