@@ -237,10 +237,13 @@ def server(state):
 
     @app.route("/scheduler", methods=["POST"])
     def set_scheduler():
-        enable = request.forms.get("enable")
-        logging.debug(f"Schedule enabled: {enable}")
-        state["sched_enabled"] = enable
-        return {"scheduler": enable}
+        try:
+            enable = request.forms.get("enable")
+            logging.debug(f"Schedule enabled: {enable}")
+            state["sched_enabled"] = enable
+            return {"scheduler": enable}
+        except Exception as e:
+            logging.error(e)
 
     @app.route("/setwake", methods=["POST"])
     def set_wake():
