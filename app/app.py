@@ -98,6 +98,7 @@ def pid_loop(state):
     while True:
         try:
             temp = sensor.temperature
+            logging.debug(f"Temperature: {temp:.3f}")
             del temperr[0]
             temperr.append(0)
         except:
@@ -353,16 +354,16 @@ if __name__ == "__main__":
             logging.error("ERROR IN PID THREAD, RESTARTING")
             p.terminate()
 
-        try:
-            hc = urlopen(urlhc, timeout=2)
-            if hc.getcode() != 200:
-                weberr += 1
-        except:
-            weberr += 1
-
-        if weberr > 9:
-            logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
-            r.terminate()
+        # try:
+        #     hc = urlopen(urlhc, timeout=10)
+        #     if hc.getcode() != 200:
+        #         weberr += 1
+        # except:
+        #     weberr += 1
+        #
+        # if weberr > 9:
+        #     logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
+        #     r.terminate()
 
         if cpu_t.temperature > 75:
             cpuhot += 1
