@@ -297,31 +297,26 @@ if __name__ == "__main__":
     b = Process(target=power_loop, args=(pidstate,))
     # b.daemon = True
     b.start()
-    b.join()
 
     logging.info("Starting scheduler thread...")
     s = Process(target=scheduler, args=(pidstate,))
     # s.daemon = True
     s.start()
-    s.join()
 
     logging.info("Starting PID thread...")
     p = Process(target=pid_loop, args=(pidstate,))
     # p.daemon = True
     p.start()
-    p.join()
 
     logging.info("Starting heat control thread...")
     h = Process(target=heating_loop, args=(pidstate,))
     # h.daemon = True
     h.start()
-    h.join()
 
     logging.info("Starting server thread...")
     r = Process(target=server, args=(pidstate,))
     # r.daemon = True
     r.start()
-    r.join()
 
     # Start Watchdog loop
     logging.info("Starting Watchdog...")
