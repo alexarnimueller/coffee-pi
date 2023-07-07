@@ -45,7 +45,6 @@ def power_loop(state):
 
 def heating_loop(state):
     heater = LED(config.pin_heat, active_high=False, initial_value=False)
-    heater.off()
     state["heating"] = False
 
     while True:
