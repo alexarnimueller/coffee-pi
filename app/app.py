@@ -41,6 +41,7 @@ def power_loop(state):
 
 def heating_loop(state):
     heater = LED(config.pin_heat, active_high=False, initial_value=False)
+    heater.off()
 
     while True:
         avgpid = state["avgpid"]
@@ -145,7 +146,7 @@ def pid_loop(state):
         state["pidval"] = round(pidout, 2)
         state["avgpid"] = round(avgpid, 2)
 
-        # logging.info(time(), state)
+        logging.info(datetime.today(), {k: v for k, v in state.items()})
 
         sleeptime = lasttime + config.time_sample - time()
         if sleeptime < 0:
