@@ -44,8 +44,7 @@ def power_loop(state):
 
 
 def heating_loop(state):
-    heater = LED(config.pin_heat, active_high=False, initial_value=False)
-    state["heating"] = False
+    heater = LED(config.pin_heat, active_high=True, initial_value=False)
 
     while True:
         avgpid = state["avgpid"]
@@ -288,6 +287,7 @@ if __name__ == "__main__":
     manager = Manager()
     pidstate = manager.dict()
     pidstate["is_awake"] = False
+    pidstate["heating"] = False
     pidstate["sched_enabled"] = config.schedule
     pidstate["sleep_time"] = config.time_sleep
     pidstate["wake_time"] = config.time_wake

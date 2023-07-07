@@ -15,17 +15,17 @@ time_wake = "06:50"
 time_sleep = "08:30"
 
 # sample time in seconds and history in iterations
-time_sample = 0.2
-pid_hist_len = 30
-temp_hist_len = 10
+time_sample = 0.1
+pid_hist_len = 10
+temp_hist_len = 5
 
 # cold PID parameters: proportional, integral and derivative
-pidc_kp = 3.4
+pidc_kp = 3.0
 pidc_ki = 0.3
 pidc_kd = 40.0
 
 # warm PID parameters: proportional, integral and derivative
-pidw_kp = 2.9
+pidw_kp = 3.0
 pidw_ki = 0.3
 pidw_kd = 40.0
 
