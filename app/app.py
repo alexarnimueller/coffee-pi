@@ -32,7 +32,11 @@ def power_loop(state):
     while True:
         mainswitch.wait_for_press()
         state["is_awake"] = not state["is_awake"]
-        state["pwr_led"].toggle()
+        pwr_led = LED(config.pin_powerled, initial_value=False)
+        if state["is_awake"]:
+            pwr_led.on()
+        else:
+            pwr_led.off()
 
 
 def heating_loop(state):
@@ -139,7 +143,7 @@ def pid_loop(state):
         state["pidval"] = round(pidout, 2)
         state["avgpid"] = round(avgpid, 2)
 
-        logging.info(time(), state)
+        # logging.info(time(), state)
 
         sleeptime = lasttime + config.time_sample - time()
         if sleeptime < 0:
@@ -151,12 +155,14 @@ def pid_loop(state):
 
 def wakeup(state):
     state["is_awake"] = True
-    state["pwr_led"].on()
+    pwr_led = LED(config.pin_powerled, initial_value=False)
+    pwr_led.on()
 
 
 def gotosleep(state):
     state["is_awake"] = False
-    state["pwr_led"].off()
+    pwr_led = LED(config.pin_powerled, initial_value=False)
+    pwr_led.off()
 
 
 def scheduler(state):
@@ -257,12 +263,14 @@ def server(state):
     @app.route("/turnon", methods=["GET"])
     def turnon():
         state["is_awake"] = True
-        state["pwr_led"].on()
+        pwr_led = LED(config.pin_powerled, initial_value=False)
+        pwr_led.on()
 
     @app.route("/turnoff", methods=["GET"])
     def turnoff():
         state["is_awake"] = False
-        state["pwr_led"].off()
+        pwr_led = LED(config.pin_powerled, initial_value=False)
+        pwr_led.off()
 
     @app.route("/restart")
     def restart():
@@ -285,11 +293,9 @@ if __name__ == "__main__":
     manager = Manager()
     pidstate = manager.dict()
     pidstate["is_awake"] = False
-    pidstate["pwr_led"] = LED(config.pin_powerled, initial_value=False)
-    pidstate["cpu"] = CPUTemperature()
     pidstate["sched_enabled"] = config.schedule
-    pidstate["sleep_time"] = config.time_sleep
-    pidstate["wake_time"] = config.time_wake
+    pidstate["sleep_time"] = datetime.strptime(config.time_sleep, "%H:%M")
+    pidstate["wake_time"] = datetime.strptime(config.time_wake, "%H:%M")
     pidstate["i"] = 0
     pidstate["brewtemp"] = config.brew_temp
     pidstate["avgpid"] = 0.0
@@ -324,6 +330,7 @@ if __name__ == "__main__":
     piderr = 0
     weberr = 0
     cpuhot = 0
+    cpu_t = CPUTemperature()
     urlhc = "http://localhost:" + str(config.port) + "/healthcheck"
 
     lasti = pidstate["i"]
@@ -352,7 +359,7 @@ if __name__ == "__main__":
             logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
             r.terminate()
 
-        if pidstate["cpu"].temperature > 75:
+        if cpu_t.temperature > 75:
             cpuhot += 1
             if cpuhot > 29:
                 logging.error("CPU TOO HOT! SHUTTING DOWN")

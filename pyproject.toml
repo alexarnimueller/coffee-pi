@@ -12,7 +12,7 @@ board = "^1.0"
 flask = "^1.0"
 simple_pid = "^0.2"
 gpiozero = "^1.5"
-adafruit_max31855 = "^1.6"
+adafruit-max31855 = "1.6.1"
 
 [build-system]
 requires = ["poetry-core"]
