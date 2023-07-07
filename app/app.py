@@ -41,15 +41,7 @@ def power_loop(state):
 
 
 def heating_loop(state):
-    heater = LED(config.pin_heat, active_high=False, initial_value=False)
-    if state["is_awake"]:
-        heater.on()
-        state["heating"] = True
-    else:
-        heater.off()
-        state["heating"] = False
-
-    logging.debug(f"Heater: {heater.is_active}")
+    heater = LED(config.pin_heat, active_high=False, initial_value=True)
 
     while True:
         avgpid = state["avgpid"]
@@ -122,10 +114,10 @@ def pid_loop(state):
             del temphist[0]
             avgtemp = sum(temphist) / config.temp_hist_len
 
-        if avgtemp <= 75:
+        if avgtemp <= 70:
             lastcold = i
 
-        if avgtemp > 75:
+        if avgtemp > 70:
             lastwarm = i
 
         if iscold and (i - lastcold) * config.time_sample > 60 * 15:
@@ -164,15 +156,13 @@ def pid_loop(state):
         lasttime = time()
 
 
-def wakeup(state):
-    state["is_awake"] = True
-
-
-def gotosleep(state):
-    state["is_awake"] = False
-
-
 def scheduler(state):
+    def wakeup(state):
+        state["is_awake"] = True
+
+    def gotosleep(state):
+        state["is_awake"] = False
+
     last_wake = 0
     last_sleep = 0
     last_sched_switch = False
@@ -197,16 +187,14 @@ def scheduler(state):
 
                 if waketm < sleeptm:
                     if waketm <= nowtm < sleeptm:
-                        wakeup(state)
+                        state["is_awake"] = True
                     else:
-                        gotosleep(state)
+                        state["is_awake"] = False
                 elif waketm > sleeptm:
                     if waketm > nowtm >= sleeptm:
-                        gotosleep(state)
+                        state["is_awake"] = False
                     else:
-                        wakeup(state)
-            else:
-                wakeup(state)
+                        state["is_awake"] = True
 
         last_wake = state["wake_time"]
         last_sleep = state["sleep_time"]
@@ -307,28 +295,33 @@ if __name__ == "__main__":
 
     logging.info("Starting power button thread...")
     b = Process(target=power_loop, args=(pidstate,))
-    b.daemon = True
+    # b.daemon = True
     b.start()
+    b.join()
 
     logging.info("Starting scheduler thread...")
     s = Process(target=scheduler, args=(pidstate,))
-    s.daemon = True
+    # s.daemon = True
     s.start()
+    s.join()
 
     logging.info("Starting PID thread...")
     p = Process(target=pid_loop, args=(pidstate,))
-    p.daemon = True
+    # p.daemon = True
     p.start()
+    p.join()
 
     logging.info("Starting heat control thread...")
     h = Process(target=heating_loop, args=(pidstate,))
-    h.daemon = True
+    # h.daemon = True
     h.start()
+    h.join()
 
     logging.info("Starting server thread...")
     r = Process(target=server, args=(pidstate,))
-    r.daemon = True
+    # r.daemon = True
     r.start()
+    r.join()
 
     # Start Watchdog loop
     logging.info("Starting Watchdog...")
