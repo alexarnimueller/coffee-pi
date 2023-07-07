@@ -85,6 +85,7 @@ $(document).ready(function () {
       "/brewtemp",
       { "settemp": $("#inputSetTemp").val() }
     );
+    console.log($("#inputSetTemp").val());
   });
 
   $("#inputSleep").change(function () {
@@ -92,6 +93,7 @@ $(document).ready(function () {
       "/setsleep",
       { "sleep": $("#inputSleep").val() }
     );
+    console.log($("#inputSleep").val());
   });
 
   $("#inputWake").change(function () {
@@ -99,10 +101,11 @@ $(document).ready(function () {
       "/setwake",
       { "wake": $("#inputWake").val() }
     );
+    console.log($("#inputWake").val());
   });
 
   $("#btnTimerDisable").click(function () {
-    $.post("/scheduler", { "scheduler": false });
+    $.post("/scheduler", { "enable": false });
     $("#inputWake").hide();
     $("#labelWake").hide();
     $("#inputSleep").hide();
@@ -112,7 +115,7 @@ $(document).ready(function () {
   });
 
   $("#btnTimerEnable").click(function () {
-    $.post("/scheduler", { "scheduler": true });
+    $.post("/scheduler", { "enable": true });
     $("#inputWake").show();
     $("#labelWake").show();
     $("#inputSleep").show();
