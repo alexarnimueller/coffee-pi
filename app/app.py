@@ -235,12 +235,12 @@ def server(state):
     def allstats():
         return jsonify({k: v for k, v in state.items()})
 
-    @app.route("/scheduler", methods=["POST"])
-    def set_scheduler():
-        enable = request.form.get("enable")
-        logging.debug(f"Schedule enabled: {enable}")
-        state["sched_enabled"] = enable
-        return {"scheduler": enable}
+    @app.route("/scheduler/<onoff>", methods=["GET"])
+    def set_scheduler(onoff):
+        if onoff == "on":
+            state["sched_enabled"] = True
+        else:
+            state["sched_enabled"] = False
 
     @app.route("/setwake", methods=["POST"])
     def set_wake():
