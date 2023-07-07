@@ -13,7 +13,7 @@ import schedule
 from adafruit_max31855 import MAX31855
 from busio import SPI
 from digitalio import DigitalInOut
-from flask import Flask, jsonify, request, render_template, abort
+from flask import Flask, flash, redirect, jsonify, request, render_template, abort
 from gpiozero import LED, CPUTemperature, Button
 from simple_pid import PID
 
@@ -216,14 +216,13 @@ def server(state):
 
     @app.route("/brewtemp", methods=["GET", "POST"])
     def brewtemp():
-        msg = None
         if request.method == "POST":
-            temp = request.form["temp"]
-            if 90.0 < temp < 105.0:
+            temp = request.form["settemp"]
+            if 90.0 < temp < 100.0:
                 state["brewtemp"] = temp
             else:
-                msg = f"{temp}°C is outside the accepted range!"
-            return render_template("brewtemp.html", temp=temp, msg=msg)
+                flash(f"{temp}°C is outside the accepted range!")
+            return redirect("/")
 
         else:
             return jsonify({"temp": state["brewtemp"]})
@@ -235,6 +234,11 @@ def server(state):
     @app.route("/allstats", methods=["GET"])
     def allstats():
         return jsonify({k: v for k, v in state.items()})
+
+    @app.route("/scheduler", methods=["POST"])
+    def set_scheduler():
+        state["sched_enabled"] = bool(request.forms.get("scheduler"))
+        return {"scheduler": state["sched_enabled"]}
 
     @app.route("/setwake", methods=["POST"])
     def set_wake():
