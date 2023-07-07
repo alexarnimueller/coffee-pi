@@ -294,8 +294,8 @@ if __name__ == "__main__":
     pidstate = manager.dict()
     pidstate["is_awake"] = False
     pidstate["sched_enabled"] = config.schedule
-    pidstate["sleep_time"] = datetime.strptime(config.time_sleep, "%H:%M")
-    pidstate["wake_time"] = datetime.strptime(config.time_wake, "%H:%M")
+    pidstate["sleep_time"] = config.time_sleep
+    pidstate["wake_time"] = config.time_wake
     pidstate["i"] = 0
     pidstate["brewtemp"] = config.brew_temp
     pidstate["avgpid"] = 0.0
