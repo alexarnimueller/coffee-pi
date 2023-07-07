@@ -37,6 +37,7 @@ def power_loop(state):
             pwr_led.on()
         else:
             pwr_led.off()
+        pwr_led.close()
 
 
 def heating_loop(state):
@@ -157,12 +158,14 @@ def wakeup(state):
     state["is_awake"] = True
     pwr_led = LED(config.pin_powerled, initial_value=False)
     pwr_led.on()
+    pwr_led.close()
 
 
 def gotosleep(state):
     state["is_awake"] = False
     pwr_led = LED(config.pin_powerled, initial_value=False)
     pwr_led.off()
+    pwr_led.close()
 
 
 def scheduler(state):
@@ -265,12 +268,14 @@ def server(state):
         state["is_awake"] = True
         pwr_led = LED(config.pin_powerled, initial_value=False)
         pwr_led.on()
+        pwr_led.close()
 
     @app.route("/turnoff", methods=["GET"])
     def turnoff():
         state["is_awake"] = False
         pwr_led = LED(config.pin_powerled, initial_value=False)
         pwr_led.off()
+        pwr_led.close()
 
     @app.route("/restart")
     def restart():
