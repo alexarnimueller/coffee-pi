@@ -236,7 +236,7 @@ def server(state):
 
     @app.route("/status", methods=["GET"])
     def allstats():
-        return jsonify(state)
+        return jsonify({k: v for k, v in state.items()})
 
     @app.route("/setwake", methods=["POST"])
     def set_wake():
