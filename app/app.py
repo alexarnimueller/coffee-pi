@@ -41,13 +41,14 @@ def power_loop(state):
 
 def heating_loop(state):
     heater = LED(config.pin_heat, active_high=False, initial_value=False)
-    heater.off()
+    heater.on()
+    logging.debug(f"Heater: {heater.is_active}")
     state["heating"] = False
 
     while True:
         avgpid = state["avgpid"]
 
-        logging.debug(f'Awake: {state["is_awake"]}, Heating: {state["heating"]}')
+        logging.debug(f'Awake: {state["is_awake"]}, Heating: {state["heating"]}, Heater: {heater.is_active}')
 
         if not state["is_awake"]:
             state["heating"] = False
