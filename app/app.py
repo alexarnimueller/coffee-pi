@@ -263,10 +263,12 @@ def server(state):
     @app.route("/turnon", methods=["GET"])
     def turnon():
         state["is_awake"] = True
+        return "ON"
 
     @app.route("/turnoff", methods=["GET"])
     def turnoff():
         state["is_awake"] = False
+        return "OFF"
 
     @app.route("/restart")
     def restart():
