@@ -42,11 +42,12 @@ def power_loop(state):
 def heating_loop(state):
     heater = LED(config.pin_heat, active_high=False, initial_value=False)
     heater.off()
+    state["heating"] = False
 
     while True:
         avgpid = state["avgpid"]
 
-        logging.debug(f'Awake: {state["is_awake"]}')
+        logging.debug(f'Awake: {state["is_awake"]}, Heating: {state["heating"]}')
 
         if not state["is_awake"]:
             state["heating"] = False
@@ -62,11 +63,11 @@ def heating_loop(state):
                 heater.on()
                 sleep(avgpid / 100.0)
                 heater.off()
+                state["heating"] = False
                 sleep(1 - (avgpid / 100.0))
-                state["heating"] = False
             else:  # turn off if temp higher than brew temp
-                heater.off()
                 state["heating"] = False
+                heater.off()
                 sleep(1)
 
 
