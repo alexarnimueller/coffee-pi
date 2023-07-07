@@ -16,7 +16,7 @@ from flask import Flask, jsonify, request, render_template, abort
 from gpiozero import LED, CPUTemperature, Button
 from simple_pid import PID
 
-import app.config as config
+import config as config
 
 logging.basicConfig(
     filename="run.log",
