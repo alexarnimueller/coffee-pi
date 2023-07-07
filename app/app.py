@@ -237,17 +237,14 @@ def server(state):
 
     @app.route("/scheduler", methods=["POST"])
     def set_scheduler():
-        try:
-            enable = request.forms.get("enable")
-            logging.debug(f"Schedule enabled: {enable}")
-            state["sched_enabled"] = enable
-            return {"scheduler": enable}
-        except Exception as e:
-            logging.error(e)
+        enable = request.form.get("enable")
+        logging.debug(f"Schedule enabled: {enable}")
+        state["sched_enabled"] = enable
+        return {"scheduler": enable}
 
     @app.route("/setwake", methods=["POST"])
     def set_wake():
-        wake = request.forms.get("wake")
+        wake = request.form.get("wake")
         try:
             datetime.strptime(wake, "%H:%M")
         except:
@@ -257,7 +254,7 @@ def server(state):
 
     @app.route("/setsleep", methods=["POST"])
     def set_sleep():
-        sleep = request.forms.get("sleep")
+        sleep = request.form.get("sleep")
         try:
             datetime.strptime(sleep, "%H:%M")
         except:
