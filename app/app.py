@@ -44,8 +44,10 @@ def heating_loop(state):
     heater = LED(config.pin_heat, active_high=False, initial_value=False)
     if state["is_awake"]:
         heater.on()
+        state["heating"] = True
     else:
         heater.off()
+        state["heating"] = False
 
     logging.debug(f"Heater: {heater.is_active}")
 
