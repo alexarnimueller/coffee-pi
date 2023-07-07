@@ -1,7 +1,7 @@
 # config.py
 # Configuration file setting default parameters
 
-# pin controlling heating element
+# pin controlling heating element etc.
 pin_heat = 4
 pin_mainswitch = 12
 pin_powerled = 16
@@ -10,14 +10,14 @@ pin_powerled = 16
 brew_temp = 93
 
 # weak-up and sleep times
-schedule = True
+schedule = False
 time_wake = "06:50"
 time_sleep = "08:30"
 
 # sample time in seconds and history in iterations
-time_sample = 0.1
-pid_hist_len = 25
-temp_hist_len = 5
+time_sample = 0.2
+pid_hist_len = 30
+temp_hist_len = 30
 
 # cold PID parameters: proportional, integral and derivative
 pidc_kp = 3.4

@@ -31,17 +31,21 @@ logging.basicConfig(
 def power_loop(state):
     mainswitch = Button(config.pin_mainswitch)
     pwr_led = LED(config.pin_powerled, initial_value=False)
+
+    if state["is_awake"]:
+        pwr_led.on()
+    else:
+        pwr_led.off()
+
     while True:
-        if state["is_awake"]:
-            pwr_led.on()
-        else:
-            pwr_led.off()
         mainswitch.wait_for_press()
         state["is_awake"] = not state["is_awake"]
+        pwr_led.toggle()
 
 
 def heating_loop(state):
-    heater = LED(config.pin_heat, active_high=False, initial_value=True)
+    heater = LED(config.pin_heat, active_high=False, initial_value=False)
+    heater.off()
     state["heating"] = False
 
     while True:
@@ -147,7 +151,7 @@ def pid_loop(state):
         state["pidval"] = round(pidout, 2)
         state["avgpid"] = round(avgpid, 2)
 
-        logging.info(datetime.today(), {k: v for k, v in state.items()})
+        logging.info({k: v for k, v in state.items()})
 
         sleeptime = lasttime + config.time_sample - time()
         if sleeptime < 0:
@@ -207,8 +211,6 @@ def scheduler(state):
 
 def server(state):
     app = Flask(__name__)
-
-    # TODO: type checks
 
     @app.route("/")
     def index():
