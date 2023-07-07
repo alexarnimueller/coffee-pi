@@ -10,9 +10,9 @@ pin_powerled = 16
 brew_temp = 93
 
 # weak-up and sleep times
-schedule = True
-time_wake = '6:50'
-time_sleep = '8:30'
+schedule = False
+time_wake = "06:50"
+time_sleep = "08:30"
 
 # sample time in seconds and history in iterations
 time_sample = 0.1
