@@ -102,7 +102,7 @@ $(document).ready(function () {
   });
 
   $("#btnTimerDisable").click(function () {
-    $.post("/scheduler", { "scheduler": "False" });
+    $.post("/scheduler", { "scheduler": false });
     $("#inputWake").hide();
     $("#labelWake").hide();
     $("#inputSleep").hide();
@@ -112,7 +112,7 @@ $(document).ready(function () {
   });
 
   $("#btnTimerEnable").click(function () {
-    $.post("/scheduler", { "scheduler": "True" });
+    $.post("/scheduler", { "scheduler": true });
     $("#inputWake").show();
     $("#labelWake").show();
     $("#inputSleep").show();

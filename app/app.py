@@ -237,7 +237,7 @@ def server(state):
 
     @app.route("/scheduler", methods=["POST"])
     def set_scheduler():
-        state["sched_enabled"] = bool(request.forms.get("scheduler"))
+        state["sched_enabled"] = request.forms.get("scheduler")
         return {"scheduler": state["sched_enabled"]}
 
     @app.route("/setwake", methods=["POST"])
