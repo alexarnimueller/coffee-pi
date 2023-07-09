@@ -51,17 +51,17 @@ def heating_loop(state):
             state["heating"] = False
             sleep(1)
         else:
-            if state["avgpid"] >= 50:  # check less often when far away from brew temp
+            if state["avgpid"] >= 100.0:  # check less often when far away from brew temp
                 heater.on()
                 state["heating"] = True
                 sleep(1)
-            elif 0 < state["avgpid"] < 50:  # check more often when closer to brew temp
+            elif 0 < state["avgpid"] < 100.0:  # check more often when closer to brew temp
                 heater.on()
                 state["heating"] = True
-                sleep(state["avgpid"] / 50.0)
+                sleep(state["avgpid"] / 100.0)
                 heater.off()
                 state["heating"] = False
-                sleep(1 - (state["avgpid"] / 50.0))
+                sleep(1 - (state["avgpid"] / 100.0))
             else:  # turn off if temp higher than brew temp
                 heater.off()
                 state["heating"] = False
@@ -148,6 +148,14 @@ def pid_loop(state):
 
         sleep(config.time_sample)
         i += 1
+
+
+def cpu_temp(state):
+    cpu_t = CPUTemperature()
+
+    while True:
+        state["cpu"] = cpu_t.temperature
+        sleep(5)
 
 
 def scheduler(state):
@@ -319,12 +327,16 @@ if __name__ == "__main__":
     # r.daemon = True
     r.start()
 
+    logging.info("Starting CPU temp thread...")
+    c = Process(target=cpu_temp, args=(pidstate,))
+    # r.daemon = True
+    c.start()
+
     # Start Watchdog loop
     logging.info("Starting Watchdog...")
     piderr = 0
     weberr = 0
     cpuhot = 0
-    cpu_t = CPUTemperature()
     urlhc = "http://localhost:" + str(config.port) + "/healthcheck"
     urloff = "http://localhost:" + str(config.port) + "/turnoff"
 
@@ -360,9 +372,9 @@ if __name__ == "__main__":
             r = Process(target=server, args=(pidstate,))
             r.start()
 
-        if cpu_t.temperature > 75:
+        if pidstate["cpu"] > 75:
             cpuhot += 1
-            if cpuhot > 29:
+            if cpuhot > 10:
                 logging.error("CPU TOO HOT! SHUTTING DOWN")
                 resp = urlopen(urloff)
                 sleep(5)
