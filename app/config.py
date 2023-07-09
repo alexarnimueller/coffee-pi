@@ -15,9 +15,9 @@ time_wake = "06:50"
 time_sleep = "08:30"
 
 # sample time in seconds and history in iterations
-time_sample = 0.1
-pid_hist_len = 5
-temp_hist_len = 20
+time_sample = 0.3
+pid_hist_len = 15
+temp_hist_len = 5
 
 # cold PID parameters: proportional, integral and derivative
 pidc_kp = 10
