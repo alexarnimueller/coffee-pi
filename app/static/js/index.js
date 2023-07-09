@@ -1,3 +1,4 @@
+var cputemp = new TimeSeries();
 var curtemp = new TimeSeries();
 var settemp = new TimeSeries();
 var settempm = new TimeSeries();
