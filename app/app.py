@@ -374,7 +374,7 @@ if __name__ == "__main__":
             r = Process(target=server, args=(pidstate,))
             r.start()
 
-        if pidstate["cpu"] > 75:
+        if pidstate["cpu"] > config.cpu_threshold:
             cpuhot += 1
             if cpuhot > 10:
                 logging.error("CPU TOO HOT! SHUTTING DOWN")
