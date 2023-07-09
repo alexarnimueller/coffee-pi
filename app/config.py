@@ -20,7 +20,7 @@ pid_hist_len = 3
 temp_hist_len = 10
 
 # cold PID parameters: proportional, integral and derivative
-pidc_kp = 10
+pidc_kp = 15
 pidc_ki = 0.005
 pidc_kd = 40
 
@@ -30,7 +30,7 @@ pidw_ki = 0.005
 pidw_kd = 40
 
 # thresholds
-pid_thresh = 100.0
+pid_thresh = 50.0
 cpu_threshold = 70.0
 
 # port for the web server
