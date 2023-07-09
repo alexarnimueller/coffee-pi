@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 from multiprocessing import Process, Manager
 from subprocess import call
-from time import sleep, time
+from time import sleep
 
 from urllib.request import urlopen
 import logging
@@ -66,14 +66,13 @@ def heating_loop(state):
 def pid_loop(state):
     i = 0
     pidout = 1.0
-    pidhist = config.pid_hist_len * [0.0]
     avgpid = 0.0
+    pidhist = config.pid_hist_len * [0.0]
     temphist = config.temp_hist_len * [0.0]
     temperr = config.temp_hist_len * [0]
     avgtemp = 25.0
     temp = 25.0
     lastsettemp = state["brewtemp"]
-    lasttime = time()
     iscold = True
     iswarm = False
     lastcold = 0
@@ -99,7 +98,8 @@ def pid_loop(state):
             del temperr[0]
             temperr.append(1)
         if sum(temperr) >= config.temp_hist_len:
-            logging.error("Temperature sensor error!")
+            logging.error("TEMPERATURE SENSOR ERROR!")
+            state["is_awake"] = False  # turn off
             sys.exit()
 
         if i % config.temp_hist_len == 0:
@@ -141,12 +141,8 @@ def pid_loop(state):
 
         # logging.debug({k: v for k, v in state.items()})
 
-        sleeptime = lasttime + config.time_sample - time()
-        if sleeptime < 0:
-            sleeptime = 0
-        sleep(sleeptime)
+        sleep(config.time_sample)
         i += 1
-        lasttime = time()
 
 
 def scheduler(state):
@@ -211,7 +207,7 @@ def server(state):
             if 90.0 < temp < 100.0:
                 state["brewtemp"] = temp
             else:
-                flash(f"{temp}°C is outside the accepted range!")
+                flash(f"{temp}°C is outside the accepted range of 90-100 °C!")
             return redirect("/")
 
         else:
