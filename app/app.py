@@ -39,11 +39,11 @@ def led_loop(state):
 
 
 def switch_loop(state):
-    mainswitch = Button(config.pin_mainswitch, bounce_time=0.2)
+    mainswitch = Button(config.pin_mainswitch)
     while True:
         mainswitch.wait_for_press()
         state["is_awake"] = not state["is_awake"]
-        sleep(0.2)
+        sleep(0.1)
 
 
 def heating_loop(state):
