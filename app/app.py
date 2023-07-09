@@ -24,7 +24,7 @@ logging.basicConfig(
     filemode="a",
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%d-%b-%y %H:%M:%S",
-    level=logging.DEBUG,
+    level=logging.INFO,
 )
 
 
@@ -48,8 +48,6 @@ def heating_loop(state):
 
     while True:
         avgpid = state["avgpid"]
-
-        logging.debug(f'Awake: {state["is_awake"]}, Heating: {state["heating"]}, Heater: {heater.is_active}')
 
         if not state["is_awake"]:
             state["heating"] = False
