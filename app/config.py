@@ -20,14 +20,14 @@ pid_hist_len = 10
 temp_hist_len = 5
 
 # cold PID parameters: proportional, integral and derivative
-pidc_kp = 10
+pidc_kp = 5
 pidc_ki = 0.0
-pidc_kd = 100
+pidc_kd = 40
 
 # warm PID parameters: proportional, integral and derivative
-pidw_kp = 10
+pidw_kp = 5
 pidw_ki = 0.0
-pidw_kd = 100
+pidw_kd = 40
 
 # port for the web server
 port = 8080
