@@ -19,13 +19,15 @@ from simple_pid import PID
 
 import config as config
 
-logging.basicConfig(
-    filename="run.log",
-    filemode="a",
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%d-%b-%y %H:%M:%S",
-    level=logging.INFO,
-)
+
+def log_setup():
+    log_handler = logging.handlers.WatchedFileHandler("run.log")
+    formatter = logging.Formatter("%(asctime)s  - %(levelname)s - %(message)s", "%d-%b-%y %H:%M:%S")
+    formatter.converter = time.gmtime  # if you want UTC time
+    log_handler.setFormatter(formatter)
+    logger = logging.getLogger()
+    logger.addHandler(log_handler)
+    logger.setLevel(logging.INFO)
 
 
 def led_loop(state):
@@ -296,6 +298,8 @@ def server(state):
 
 
 if __name__ == "__main__":
+    log_setup()
+
     manager = Manager()
     pidstate = manager.dict()
     pidstate["is_awake"] = False
