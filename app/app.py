@@ -112,10 +112,9 @@ def pid_loop(state):
             state["is_awake"] = False  # turn off
             sys.exit()
 
-        if i % config.temp_hist_len == 0:
-            temphist.append(temp)
-            del temphist[0]
-            avgtemp = sum(temphist) / config.temp_hist_len
+        temphist.append(temp)
+        del temphist[0]
+        avgtemp = sum(temphist) / config.temp_hist_len
 
         if avgtemp <= 70:
             lastcold = i
