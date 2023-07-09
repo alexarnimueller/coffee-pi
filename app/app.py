@@ -234,7 +234,7 @@ def server(state):
         return jsonify({k: v for k, v in state.items()})
 
     @app.route("/scheduler", methods=["POST"])
-    def set_scheduler(onoff):
+    def set_scheduler():
         scdlr = request.form.get("scheduler")
         if scdlr == "on":
             state["sched_enabled"] = True
