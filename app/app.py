@@ -7,6 +7,7 @@ from time import sleep
 
 from urllib.request import urlopen
 import logging
+from logging.handlers import WatchedFileHandler
 
 import board
 import schedule
@@ -21,7 +22,7 @@ import config as config
 
 
 def log_setup():
-    log_handler = logging.handlers.WatchedFileHandler("run.log")
+    log_handler = WatchedFileHandler("run.log")
     formatter = logging.Formatter("%(asctime)s  - %(levelname)s - %(message)s", "%d-%b-%y %H:%M:%S")
     formatter.converter = time.gmtime  # if you want UTC time
     log_handler.setFormatter(formatter)
