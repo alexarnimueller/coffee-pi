@@ -42,8 +42,9 @@ def switch_loop(state):
     mainswitch = Button(config.pin_mainswitch)
     while True:
         mainswitch.wait_for_press()
+        logging.debug("Button pressed!")
         state["is_awake"] = not state["is_awake"]
-        sleep(0.1)
+        sleep(config.time_sample)
 
 
 def heating_loop(state):
@@ -345,7 +346,15 @@ if __name__ == "__main__":
     lasti = pidstate["i"]
     sleep(1)
 
-    while b.is_alive() and p.is_alive() and h.is_alive() and r.is_alive() and s.is_alive():
+    while (
+        b.is_alive()
+        and l.is_alive()
+        and p.is_alive()
+        and h.is_alive()
+        and r.is_alive()
+        and s.is_alive()
+        and c.is_alive()
+    ):
         curi = pidstate["i"]
         if curi == lasti:
             piderr += 1
@@ -353,7 +362,7 @@ if __name__ == "__main__":
             piderr = 0
         lasti = curi
 
-        if piderr > 9:
+        if piderr > int(9 * (1.0 / config.time_sample)):
             logging.error("ERROR IN PID THREAD, RESTARTING")
             p.terminate()
             logging.info("Restarting PID thread...")
@@ -367,7 +376,7 @@ if __name__ == "__main__":
         except:
             weberr += 1
 
-        if weberr > 9:
+        if weberr > int(9 * (1.0 / config.time_sample)):
             logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
             r.terminate()
             logging.info("Restarting server thread...")
@@ -376,10 +385,10 @@ if __name__ == "__main__":
 
         if pidstate["cpu"] > config.cpu_threshold:
             cpuhot += 1
-            if cpuhot > 10:
+            if cpuhot > int(30 * (1.0 / config.time_sample)):
                 logging.error("CPU TOO HOT! SHUTTING DOWN")
                 resp = urlopen(urloff)
                 sleep(5)
                 call(["shutdown", "-h", "now"])
 
-        sleep(1)
+        sleep(config.time_sample)
