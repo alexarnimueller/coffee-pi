@@ -358,6 +358,9 @@ if __name__ == "__main__":
         if weberr > 9:
             logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
             r.terminate()
+            logging.info("Starting server thread...")
+            r = Process(target=server, args=(pidstate,))
+            r.start()
 
         if cpu_t.temperature > 75:
             cpuhot += 1
