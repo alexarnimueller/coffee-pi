@@ -1,4 +1,3 @@
-var cputemp = new TimeSeries();
 var curtemp = new TimeSeries();
 var settemp = new TimeSeries();
 var settempm = new TimeSeries();
@@ -162,7 +161,6 @@ setInterval(function () {
           $("#heatStatus").removeClass("btn-warning");
           $("#heatStatus").addClass("btn-dark");
         }
-        cputemp.append(new Date().getTime(), resp.cpu);
         curtemp.append(new Date().getTime(), resp.temp);
         settemp.append(new Date().getTime(), resp.brewtemp);
         settempm.append(new Date().getTime(), resp.brewtemp - 4);
@@ -194,7 +192,6 @@ function createTimeline() {
   chart.addTimeSeries(settempm, { lineWidth: 1, strokeStyle: '#ffffff' });
   chart.addTimeSeries(settempp, { lineWidth: 1, strokeStyle: '#ffffff' });
   chart.addTimeSeries(curtemp, { lineWidth: 3, strokeStyle: '#ff0000' });
-  chart.addTimeSeries(cputemp, { lineWidth: 2, strokeStyle: '#ff00ff', });
   chart.streamTo(document.getElementById("chart"), 500);
 
   var pidchart = new SmoothieChart({ grid: { verticalSections: 3 }, minValueScale: 1.05, maxValueScale: 1.05 });
