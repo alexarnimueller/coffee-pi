@@ -198,7 +198,7 @@ function createTimeline() {
   pidchart.addTimeSeries(pterm, { lineWidth: 2, strokeStyle: '#ff0000' });
   pidchart.addTimeSeries(iterm, { lineWidth: 2, strokeStyle: '#00ff00' });
   pidchart.addTimeSeries(dterm, { lineWidth: 2, strokeStyle: '#0000ff' });
-  pidchart.addTimeSeries(pidval, { lineWidth: 2, strokeStyle: '#ffff00' });
+  pidchart.addTimeSeries(pidval, { lineWidth: 2, strokeStyle: '#FFA500' });
   pidchart.addTimeSeries(avgpid, { lineWidth: 2, strokeStyle: '#ff00ff' });
   pidchart.streamTo(document.getElementById("pidchart"), 500);
 }
