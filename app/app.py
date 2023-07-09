@@ -240,6 +240,7 @@ def server(state):
             state["sched_enabled"] = True
         else:
             state["sched_enabled"] = False
+        return f"Scheduler is {scdlr}"
 
     @app.route("/setwake", methods=["POST"])
     def set_wake():
