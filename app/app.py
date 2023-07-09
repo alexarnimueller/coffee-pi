@@ -24,7 +24,7 @@ logging.basicConfig(
     filemode="a",
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%d-%b-%y %H:%M:%S",
-    level=logging.INFO,
+    level=logging.DEBUG,
 )
 
 
@@ -32,41 +32,33 @@ def power_loop(state):
     mainswitch = Button(config.pin_mainswitch)
     pwr_led = LED(config.pin_powerled, initial_value=False)
 
-    if state["is_awake"]:
-        pwr_led.on()
-    else:
-        pwr_led.off()
-
     while True:
         mainswitch.wait_for_press()
         state["is_awake"] = not state["is_awake"]
-        pwr_led.toggle()
+        if state["is_awake"]:
+            pwr_led.on()
+        else:
+            pwr_led.off()
 
 
 def heating_loop(state):
     heater = LED(config.pin_heat, active_high=True, initial_value=False)
+    logging.debug(heater)
 
     while True:
-        avgpid = state["avgpid"]
-
         if not state["is_awake"]:
-            state["heating"] = False
             heater.off()
             sleep(1)
         else:
-            if avgpid >= 100:  # check less often when far away from brew temp
-                state["heating"] = True
+            if state["avgpid"] >= 100:  # check less often when far away from brew temp
                 heater.on()
                 sleep(1)
-            elif 0 < avgpid < 100:  # check more often when closer to brew temp
-                state["heating"] = True
+            elif 0 < state["avgpid"] < 100:  # check more often when closer to brew temp
                 heater.on()
-                sleep(avgpid / 100.0)
+                sleep(state["avgpid"] / 100.0)
                 heater.off()
-                state["heating"] = False
-                sleep(1 - (avgpid / 100.0))
+                sleep(1 - (state["avgpid"] / 100.0))
             else:  # turn off if temp higher than brew temp
-                state["heating"] = False
                 heater.off()
                 sleep(1)
 
@@ -121,11 +113,11 @@ def pid_loop(state):
         if avgtemp > 70:
             lastwarm = i
 
-        if iscold and (i - lastcold) * config.time_sample > 60 * 15:
+        if iscold and (i - lastcold) * config.time_sample > 300:
             pid.tunings = (config.pidw_kp, config.pidw_ki, config.pidw_kd)
             iscold = False
 
-        if iswarm and (i - lastwarm) * config.time_sample > 60 * 15:
+        if iswarm and (i - lastwarm) * config.time_sample > 300:
             pid.tunings = (config.pidc_kp, config.pidc_ki, config.pidc_kd)
             iscold = True
 
@@ -143,11 +135,11 @@ def pid_loop(state):
         state["temp"] = temp
         state["iscold"] = iscold
         state["pterm"], state["iterm"], state["dterm"] = pid.components
-        state["avgtemp"] = round(avgtemp, 2)
-        state["pidval"] = round(pidout, 2)
-        state["avgpid"] = round(avgpid, 2)
+        state["avgtemp"] = round(avgtemp, 3)
+        state["pidval"] = round(pidout, 3)
+        state["avgpid"] = round(avgpid, 3)
 
-        logging.debug({k: v for k, v in state.items()})
+        # logging.debug({k: v for k, v in state.items()})
 
         sleeptime = lasttime + config.time_sample - time()
         if sleeptime < 0:
