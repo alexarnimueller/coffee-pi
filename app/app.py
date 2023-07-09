@@ -333,6 +333,7 @@ if __name__ == "__main__":
     cpuhot = 0
     cpu_t = CPUTemperature()
     urlhc = "http://localhost:" + str(config.port) + "/healthcheck"
+    urloff = "http://localhost:" + str(config.port) + "/turnoff"
 
     lasti = pidstate["i"]
     sleep(1)
@@ -348,9 +349,12 @@ if __name__ == "__main__":
         if piderr > 9:
             logging.error("ERROR IN PID THREAD, RESTARTING")
             p.terminate()
+            logging.info("Restarting PID thread...")
+            p = Process(target=pid_loop, args=(pidstate,))
+            p.start()
 
         try:
-            hc = urlopen(urlhc, timeout=10)
+            hc = urlopen(urlhc)
             if hc.getcode() != 200:
                 weberr += 1
         except:
@@ -359,7 +363,7 @@ if __name__ == "__main__":
         if weberr > 9:
             logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
             r.terminate()
-            logging.info("Starting server thread...")
+            logging.info("Restarting server thread...")
             r = Process(target=server, args=(pidstate,))
             r.start()
 
@@ -367,6 +371,8 @@ if __name__ == "__main__":
             cpuhot += 1
             if cpuhot > 29:
                 logging.error("CPU TOO HOT! SHUTTING DOWN")
+                resp = urlopen(urloff)
+                sleep(5)
                 call(["shutdown", "-h", "now"])
 
         sleep(1)
