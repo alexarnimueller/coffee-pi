@@ -17,12 +17,12 @@ time_sleep = "08:30"
 # sample time in seconds and history in iterations
 time_sample = 0.1
 pid_hist_len = 5
-temp_hist_len = 10
+temp_hist_len = 20
 
 # cold PID parameters: proportional, integral and derivative
 pidc_kp = 5
 pidc_ki = 0.0
-pidc_kd = 10
+pidc_kd = 20
 
 # warm PID parameters: proportional, integral and derivative
 pidw_kp = 5
