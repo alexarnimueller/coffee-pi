@@ -172,7 +172,7 @@ setInterval(function () {
         dterm.append(new Date().getTime(), resp.dterm);
         pidval.append(new Date().getTime(), resp.pidval);
         avgpid.append(new Date().getTime(), resp.avgpid);
-        $("#cputemp").html(resp.temp.toFixed(2));
+        $("#cputemp").html(resp.cpu.toFixed(2));
         $("#curtemp").html(resp.temp.toFixed(2));
         $("#pterm").html(resp.pterm.toFixed(2));
         $("#iterm").html(resp.iterm.toFixed(2));
