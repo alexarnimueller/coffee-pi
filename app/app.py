@@ -66,7 +66,7 @@ def heating_loop(state):
                 sleep(config.time_sample * float(state["avgpid"] / config.pid_thresh))
                 heater.off()
                 state["heating"] = False
-                sleep(config.time_sample - config.time_sample * float(state["avgpid"] / config.pid_thresh))
+                sleep(config.time_sample * (1.0 - (state["avgpid"] / config.pid_thresh)))
             else:  # turn off if temp higher than brew temp
                 heater.off()
                 state["heating"] = False
