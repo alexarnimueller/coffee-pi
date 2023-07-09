@@ -49,23 +49,23 @@ def heating_loop(state):
         if not state["is_awake"]:
             heater.off()
             state["heating"] = False
-            sleep(1)
+            sleep(state["time_sample"])
         else:
-            if state["avgpid"] >= 100.0:  # check less often when far away from brew temp
+            if state["avgpid"] >= state["pid_thresh"]:  # check less often when far away from brew temp
                 heater.on()
                 state["heating"] = True
-                sleep(1)
-            elif 0 < state["avgpid"] < 100.0:  # check more often when closer to brew temp
+                sleep(state["time_sample"])
+            elif 0 < state["avgpid"] < state["pid_thresh"]:  # check more often when closer to brew temp
                 heater.on()
                 state["heating"] = True
-                sleep(state["avgpid"] / 100.0)
+                sleep(state["avgpid"] / state["pid_thresh"])
                 heater.off()
                 state["heating"] = False
-                sleep(1 - (state["avgpid"] / 100.0))
+                sleep(state["time_sample"] - (state["avgpid"] / state["pid_thresh"]))
             else:  # turn off if temp higher than brew temp
                 heater.off()
                 state["heating"] = False
-                sleep(1)
+                sleep(state["time_sample"])
 
 
 def pid_loop(state):
@@ -146,7 +146,7 @@ def pid_loop(state):
 
         # logging.debug({k: v for k, v in state.items()})
 
-        sleep(config.time_sample)
+        sleep(state["time_sample"])
         i += 1
 
 
@@ -203,7 +203,7 @@ def scheduler(state):
         last_sched_switch = state["sched_enabled"]
 
         schedule.run_pending()
-        sleep(1)
+        sleep(5)
 
 
 def server(state):
@@ -296,11 +296,13 @@ if __name__ == "__main__":
     pidstate["is_awake"] = False
     pidstate["heating"] = False
     pidstate["sched_enabled"] = config.schedule
+    pidstate["time_sample"] = config.time_sample
     pidstate["sleep_time"] = config.time_sleep
     pidstate["wake_time"] = config.time_wake
     pidstate["i"] = 0
     pidstate["brewtemp"] = config.brew_temp
     pidstate["avgpid"] = 0.0
+    pidstate["pid_thresh"] = config.pid_thresh
 
     logging.info("Starting power button thread...")
     b = Process(target=power_loop, args=(pidstate,))
