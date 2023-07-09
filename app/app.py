@@ -28,17 +28,22 @@ logging.basicConfig(
 )
 
 
-def power_loop(state):
-    mainswitch = Button(config.pin_mainswitch)
+def led_loop(state):
     pwr_led = LED(config.pin_powerled, initial_value=False)
-
     while True:
-        mainswitch.wait_for_press()
-        state["is_awake"] = not state["is_awake"]
         if state["is_awake"]:
             pwr_led.on()
         else:
             pwr_led.off()
+        sleep(config.time_sample)
+
+
+def switch_loop(state):
+    mainswitch = Button(config.pin_mainswitch, bounce_time=0.2)
+    while True:
+        mainswitch.wait_for_press()
+        state["is_awake"] = not state["is_awake"]
+        sleep(0.2)
 
 
 def heating_loop(state):
@@ -49,23 +54,23 @@ def heating_loop(state):
         if not state["is_awake"]:
             heater.off()
             state["heating"] = False
-            sleep(state["time_sample"])
+            sleep(config.time_sample)
         else:
-            if state["avgpid"] >= state["pid_thresh"]:  # check less often when far away from brew temp
+            if state["avgpid"] >= config.pid_thresh:  # check less often when far away from brew temp
                 heater.on()
                 state["heating"] = True
-                sleep(state["time_sample"])
-            elif 0 < state["avgpid"] < state["pid_thresh"]:  # check more often when closer to brew temp
+                sleep(config.time_sample)
+            elif 0 < state["avgpid"] < config.pid_thresh:  # check more often when closer to brew temp
                 heater.on()
                 state["heating"] = True
-                sleep(state["avgpid"] / state["pid_thresh"])
+                sleep(state["avgpid"] / config.pid_thresh)
                 heater.off()
                 state["heating"] = False
-                sleep(state["time_sample"] - (state["avgpid"] / state["pid_thresh"]))
+                sleep(config.time_sample - (state["avgpid"] / config.pid_thresh))
             else:  # turn off if temp higher than brew temp
                 heater.off()
                 state["heating"] = False
-                sleep(state["time_sample"])
+                sleep(config.time_sample)
 
 
 def pid_loop(state):
@@ -146,7 +151,7 @@ def pid_loop(state):
 
         # logging.debug({k: v for k, v in state.items()})
 
-        sleep(state["time_sample"])
+        sleep(config.time_sample)
         i += 1
 
 
@@ -296,42 +301,38 @@ if __name__ == "__main__":
     pidstate["is_awake"] = False
     pidstate["heating"] = False
     pidstate["sched_enabled"] = config.schedule
-    pidstate["time_sample"] = config.time_sample
     pidstate["sleep_time"] = config.time_sleep
     pidstate["wake_time"] = config.time_wake
-    pidstate["i"] = 0
     pidstate["brewtemp"] = config.brew_temp
     pidstate["avgpid"] = 0.0
-    pidstate["pid_thresh"] = config.pid_thresh
+    pidstate["i"] = 0
 
     logging.info("Starting power button thread...")
-    b = Process(target=power_loop, args=(pidstate,))
-    # b.daemon = True
+    b = Process(target=switch_loop, args=(pidstate,))
     b.start()
+
+    logging.info("Starting power led thread...")
+    l = Process(target=led_loop, args=(pidstate,))
+    l.start()
 
     logging.info("Starting scheduler thread...")
     s = Process(target=scheduler, args=(pidstate,))
-    # s.daemon = True
     s.start()
 
     logging.info("Starting PID thread...")
     p = Process(target=pid_loop, args=(pidstate,))
-    # p.daemon = True
     p.start()
 
     logging.info("Starting heat control thread...")
     h = Process(target=heating_loop, args=(pidstate,))
-    # h.daemon = True
     h.start()
 
     logging.info("Starting server thread...")
     r = Process(target=server, args=(pidstate,))
-    # r.daemon = True
     r.start()
 
     logging.info("Starting CPU temp thread...")
     c = Process(target=cpu_temp, args=(pidstate,))
-    # r.daemon = True
     c.start()
 
     # Start Watchdog loop
