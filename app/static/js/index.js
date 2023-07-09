@@ -105,7 +105,7 @@ $(document).ready(function () {
   });
 
   $("#btnTimerDisable").click(function () {
-    $.get("/scheduler/off");
+    $.post("/scheduler", { "scheduler": "off" });
     $("#inputWake").hide();
     $("#labelWake").hide();
     $("#inputSleep").hide();
@@ -115,7 +115,7 @@ $(document).ready(function () {
   });
 
   $("#btnTimerEnable").click(function () {
-    $.get("/scheduler/on");
+    $.post("/scheduler", { "scheduler": "on" });
     $("#inputWake").show();
     $("#labelWake").show();
     $("#inputSleep").show();

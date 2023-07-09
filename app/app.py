@@ -5,7 +5,7 @@ from multiprocessing import Process, Manager
 from subprocess import call
 from time import sleep, time
 
-# from urllib.request import urlopen
+from urllib.request import urlopen
 import logging
 
 import board
@@ -149,7 +149,7 @@ def pid_loop(state):
         state["pidval"] = round(pidout, 2)
         state["avgpid"] = round(avgpid, 2)
 
-        logging.info({k: v for k, v in state.items()})
+        logging.debug({k: v for k, v in state.items()})
 
         sleeptime = lasttime + config.time_sample - time()
         if sleeptime < 0:
@@ -235,9 +235,10 @@ def server(state):
     def allstats():
         return jsonify({k: v for k, v in state.items()})
 
-    @app.route("/scheduler/<onoff>", methods=["GET"])
+    @app.route("/scheduler", methods=["POST"])
     def set_scheduler(onoff):
-        if onoff == "on":
+        scdlr = request.form.get("scheduler")
+        if scdlr == "on":
             state["sched_enabled"] = True
         else:
             state["sched_enabled"] = False
@@ -349,16 +350,16 @@ if __name__ == "__main__":
             logging.error("ERROR IN PID THREAD, RESTARTING")
             p.terminate()
 
-        # try:
-        #     hc = urlopen(urlhc, timeout=10)
-        #     if hc.getcode() != 200:
-        #         weberr += 1
-        # except:
-        #     weberr += 1
-        #
-        # if weberr > 9:
-        #     logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
-        #     r.terminate()
+        try:
+            hc = urlopen(urlhc, timeout=10)
+            if hc.getcode() != 200:
+                weberr += 1
+        except:
+            weberr += 1
+
+        if weberr > 9:
+            logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
+            r.terminate()
 
         if cpu_t.temperature > 75:
             cpuhot += 1
