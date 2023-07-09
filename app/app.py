@@ -207,7 +207,7 @@ def server(state):
     @app.route("/brewtemp", methods=["GET", "POST"])
     def brewtemp():
         if request.method == "POST":
-            temp = request.form["settemp"]
+            temp = float(request.form["settemp"])
             if 90.0 < temp < 100.0:
                 state["brewtemp"] = temp
             else:
