@@ -51,17 +51,17 @@ def heating_loop(state):
             state["heating"] = False
             sleep(1)
         else:
-            if state["avgpid"] >= 50:  # check less often when far away from brew temp
+            if state["avgpid"] >= 10:  # check less often when far away from brew temp
                 heater.on()
                 state["heating"] = True
                 sleep(1)
-            elif 0 < state["avgpid"] < 50:  # check more often when closer to brew temp
+            elif 0 < state["avgpid"] < 10:  # check more often when closer to brew temp
                 heater.on()
                 state["heating"] = True
-                sleep(state["avgpid"] / 50.0)
+                sleep(state["avgpid"] / 10.0)
                 heater.off()
                 state["heating"] = False
-                sleep(1 - (state["avgpid"] / 50.0))
+                sleep(1 - (state["avgpid"] / 10.0))
             else:  # turn off if temp higher than brew temp
                 heater.off()
                 state["heating"] = False
