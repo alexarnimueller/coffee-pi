@@ -237,7 +237,8 @@ def scheduler(state):
 
 def server(state):
     app = Flask(__name__)
-    app.logger.setLevel(logging.WARNING)
+    log = logging.getLogger("werkzeug")
+    log.setLevel(logging.WARNING)
 
     @app.route("/")
     def index():
