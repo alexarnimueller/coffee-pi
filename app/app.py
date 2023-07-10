@@ -107,7 +107,10 @@ def pid_loop(state):
         if not state["is_awake"]:
             heater.off()
             state["heating"] = False
+            state["i"] = i
+            i += 1
             sleep(config.time_sample)
+
         else:
             # PID logic
             try:
