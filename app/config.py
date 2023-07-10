@@ -7,7 +7,7 @@ pin_mainswitch = 12
 pin_powerled = 16
 
 # brew temperature in degree celsius
-brew_temp = 93
+brew_temp = 96
 
 # weak-up and sleep times
 schedule = True
