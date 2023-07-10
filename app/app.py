@@ -28,25 +28,24 @@ def log_setup():
     log_handler.setFormatter(formatter)
     logger = logging.getLogger()
     logger.addHandler(log_handler)
-    logger.setLevel(logging.INFO)
-
-
-def led_loop(state):
-    pwr_led = LED(config.pin_powerled, initial_value=False)
-    while True:
-        if state["is_awake"]:
-            pwr_led.on()
-        else:
-            pwr_led.off()
-        sleep(config.time_sample)
+    logger.setLevel(logging.WARNING)
 
 
 def switch_loop(state):
     mainswitch = Button(config.pin_mainswitch)
+    pwr_led = LED(config.pin_powerled, initial_value=False)
+    if state["is_awake"]:
+        pwr_led.on()
+    else:
+        pwr_led.off()
     while True:
         mainswitch.wait_for_press()
         logging.debug("Button pressed!")
         state["is_awake"] = not state["is_awake"]
+        if state["is_awake"]:
+            pwr_led.on()
+        else:
+            pwr_led.off()
         sleep(config.time_sample)
 
 
@@ -158,15 +157,9 @@ def pid_loop(state):
         i += 1
 
 
-def cpu_temp(state):
+def scheduler(state):
     cpu_t = CPUTemperature()
 
-    while True:
-        state["cpu"] = cpu_t.temperature
-        sleep(5)
-
-
-def scheduler(state):
     def wakeup(state):
         state["is_awake"] = True
 
@@ -211,6 +204,9 @@ def scheduler(state):
         last_sched_switch = state["sched_enabled"]
 
         schedule.run_pending()
+
+        state["cpu"] = cpu_t.temperature
+
         sleep(5)
 
 
@@ -301,99 +297,83 @@ def server(state):
 if __name__ == "__main__":
     log_setup()
 
-    manager = Manager()
-    pidstate = manager.dict()
-    pidstate["is_awake"] = False
-    pidstate["heating"] = False
-    pidstate["sched_enabled"] = config.schedule
-    pidstate["sleep_time"] = config.time_sleep
-    pidstate["wake_time"] = config.time_wake
-    pidstate["brewtemp"] = config.brew_temp
-    pidstate["avgpid"] = 0.0
-    pidstate["i"] = 0
+    with Manager() as manager:
+        pidstate = manager.dict()
+        pidstate["is_awake"] = False
+        pidstate["heating"] = False
+        pidstate["sched_enabled"] = config.schedule
+        pidstate["sleep_time"] = config.time_sleep
+        pidstate["wake_time"] = config.time_wake
+        pidstate["brewtemp"] = config.brew_temp
+        pidstate["avgpid"] = 0.0
+        pidstate["i"] = 0
 
-    logging.info("Starting power button thread...")
-    b = Process(target=switch_loop, args=(pidstate,))
-    b.start()
+        logging.info("Starting scheduler thread...")
+        s = Process(target=scheduler, args=(pidstate,))
+        s.start()
 
-    logging.info("Starting power led thread...")
-    l = Process(target=led_loop, args=(pidstate,))
-    l.start()
+        logging.info("Starting PID thread...")
+        p = Process(target=pid_loop, args=(pidstate,))
+        p.start()
 
-    logging.info("Starting scheduler thread...")
-    s = Process(target=scheduler, args=(pidstate,))
-    s.start()
+        logging.info("Starting heat control thread...")
+        h = Process(target=heating_loop, args=(pidstate,))
+        h.start()
 
-    logging.info("Starting PID thread...")
-    p = Process(target=pid_loop, args=(pidstate,))
-    p.start()
+        logging.info("Starting server thread...")
+        r = Process(target=server, args=(pidstate,))
+        r.start()
 
-    logging.info("Starting heat control thread...")
-    h = Process(target=heating_loop, args=(pidstate,))
-    h.start()
+        logging.info("Starting power button thread...")
+        b = Process(target=switch_loop, args=(pidstate,))
+        b.start()
 
-    logging.info("Starting server thread...")
-    r = Process(target=server, args=(pidstate,))
-    r.start()
+        # Start Watchdog loop
+        logging.info("Starting Watchdog...")
+        piderr = 0
+        weberr = 0
+        cpuhot = 0
+        urlhc = "http://localhost:" + str(config.port) + "/healthcheck"
+        urloff = "http://localhost:" + str(config.port) + "/turnoff"
 
-    logging.info("Starting CPU temp thread...")
-    c = Process(target=cpu_temp, args=(pidstate,))
-    c.start()
+        lasti = pidstate["i"]
+        sleep(1)
 
-    # Start Watchdog loop
-    logging.info("Starting Watchdog...")
-    piderr = 0
-    weberr = 0
-    cpuhot = 0
-    urlhc = "http://localhost:" + str(config.port) + "/healthcheck"
-    urloff = "http://localhost:" + str(config.port) + "/turnoff"
+        while b.is_alive() and p.is_alive() and h.is_alive() and r.is_alive() and s.is_alive():
+            curi = pidstate["i"]
+            if curi == lasti:
+                piderr += 1
+            else:
+                piderr = 0
+            lasti = curi
 
-    lasti = pidstate["i"]
-    sleep(1)
+            if piderr > int(9 * (1.0 / config.time_sample)):
+                logging.error("ERROR IN PID THREAD, RESTARTING")
+                p.terminate()
+                logging.info("Restarting PID thread...")
+                p = Process(target=pid_loop, args=(pidstate,))
+                p.start()
 
-    while (
-        b.is_alive()
-        and l.is_alive()
-        and p.is_alive()
-        and h.is_alive()
-        and r.is_alive()
-        and s.is_alive()
-        and c.is_alive()
-    ):
-        curi = pidstate["i"]
-        if curi == lasti:
-            piderr += 1
-        else:
-            piderr = 0
-        lasti = curi
-
-        if piderr > int(9 * (1.0 / config.time_sample)):
-            logging.error("ERROR IN PID THREAD, RESTARTING")
-            p.terminate()
-            logging.info("Restarting PID thread...")
-            p = Process(target=pid_loop, args=(pidstate,))
-            p.start()
-
-        try:
-            hc = urlopen(urlhc)
-            if hc.getcode() != 200:
+            try:
+                hc = urlopen(urlhc)
+                if hc.getcode() != 200:
+                    weberr += 1
+            except:
                 weberr += 1
-        except:
-            weberr += 1
 
-        if weberr > int(9 * (1.0 / config.time_sample)):
-            logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
-            r.terminate()
-            logging.info("Restarting server thread...")
-            r = Process(target=server, args=(pidstate,))
-            r.start()
+            if weberr > int(9 * (1.0 / config.time_sample)):
+                logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
+                r.terminate()
+                logging.info("Restarting server thread...")
+                r = Process(target=server, args=(pidstate,))
+                r.start()
 
-        if pidstate["cpu"] > config.cpu_threshold:
-            cpuhot += 1
-            if cpuhot > int(30 * (1.0 / config.time_sample)):
-                logging.error("CPU TOO HOT! SHUTTING DOWN")
-                resp = urlopen(urloff)
-                sleep(5)
-                call(["shutdown", "-h", "now"])
+            if pidstate["cpu"] > config.cpu_threshold:
+                cpuhot += 1
+                if cpuhot > int(30 * (1.0 / config.time_sample)):
+                    logging.error("CPU TOO HOT! SHUTTING DOWN")
+                    resp = urlopen(urloff)
+                    sleep(5)
+                    call(["shutdown", "-h", "now"])
 
-        sleep(config.time_sample)
+            sleep(config.time_sample)
