@@ -152,17 +152,17 @@ def pid_loop(state):
             avgpid = sum(pidhist) / config.pid_hist_len
 
             # heating logic
-            if avgtemp >= config.pid_thresh:  # check less often when far away from brew temp
+            if avgpid >= config.pid_thresh:  # check less often when far away from brew temp
                 heater.on()
                 state["heating"] = True
                 sleep(config.time_sample)
-            elif 0 < avgtemp < config.pid_thresh:  # check more often when closer to brew temp
+            elif 0 < avgpid < config.pid_thresh:  # check more often when closer to brew temp
                 heater.on()
                 state["heating"] = True
-                sleep(config.time_sample * float(avgtemp / config.pid_thresh))
+                sleep(config.time_sample * float(avgpid / config.pid_thresh))
                 heater.off()
                 state["heating"] = False
-                sleep(max(0.01, config.time_sample * (1.0 - (avgtemp / config.pid_thresh))))
+                sleep(max(0.01, config.time_sample * (1.0 - (avgpid / config.pid_thresh))))
             else:  # turn off if temp higher than brew temp
                 heater.off()
                 state["heating"] = False
