@@ -15,7 +15,7 @@ time_wake = "06:50"
 time_sleep = "08:30"
 
 # sample time in seconds and history in iterations
-time_sample = 0.3
+time_sample = 0.5
 pid_hist_len = 3
 temp_hist_len = 10
 
