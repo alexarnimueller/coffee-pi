@@ -322,7 +322,7 @@ if __name__ == "__main__":
     lasti = pidstate["i"]
     sleep(2)
 
-    while b.is_alive() and p.is_alive() and r.is_alive() and s.is_alive():  # and h.is_alive():
+    while b.is_alive() and p.is_alive() and r.is_alive():  # and s.is_alive() and h.is_alive():
         curi = pidstate["i"]
         if curi == lasti:
             piderr += 1
