@@ -35,10 +35,7 @@ def switch_loop(state):
     mainswitch = Button(config.pin_mainswitch)
     while True:
         mainswitch.wait_for_press()
-        if state["is_awake"]:
-            urlopen("http://localhost:" + str(config.port) + "/turnoff")
-        else:
-            urlopen("http://localhost:" + str(config.port) + "/turnon")
+        state["is_awake"] = not state["is_awake"]
         sleep(config.time_sample)
 
 
@@ -68,6 +65,7 @@ def main_loop(state):
 
     cpu_t = CPUTemperature()
     heater = LED(config.pin_heat, active_high=True, initial_value=False)
+    pwr_led = LED(config.pin_powerled, initial_value=False)
     spi = SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
     cs = DigitalInOut(board.D5)
     sensor = MAX31855(spi, cs)
@@ -117,10 +115,12 @@ def main_loop(state):
         # check if work to do
         if not state["is_awake"]:
             heater.off()
+            pwr_led.off()
             state["heating"] = False
             sleep(config.time_sample)
 
         else:
+            pwr_led.on()
             # PID logic
             pidout = pid(avgtemp)
             pidhist.append(pidout)
@@ -195,8 +195,6 @@ def server(state):
     log = logging.getLogger("werkzeug")
     log.setLevel(logging.WARNING)
 
-    pwr_led = LED(config.pin_powerled, initial_value=False)
-
     @app.route("/")
     def index():
         return render_template("index.html")
@@ -254,13 +252,11 @@ def server(state):
     @app.route("/turnon", methods=["GET"])
     def turnon():
         state["is_awake"] = True
-        pwr_led.on()
         return "ON"
 
     @app.route("/turnoff", methods=["GET"])
     def turnoff():
         state["is_awake"] = False
-        pwr_led.off()
         return "OFF"
 
     @app.route("/restart")
