@@ -64,6 +64,9 @@ def main_loop(state):
     iswarm = False
     lastcold = 0
     lastwarm = 0
+    last_wake = 0
+    last_sleep = 0
+    last_sched_switch = False
 
     cpu_t = CPUTemperature()
     heater = LED(config.pin_heat, active_high=True, initial_value=False)
