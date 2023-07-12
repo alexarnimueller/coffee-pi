@@ -20,8 +20,8 @@ pid_hist_len = 3
 temp_hist_len = 10
 
 # cold PID parameters: proportional, integral and derivative
-pidc_kp = 20
-pidc_ki = 0.005
+pidc_kp = 10
+pidc_ki = 0
 pidc_kd = 150
 
 # warm PID parameters: proportional, integral and derivative

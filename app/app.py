@@ -33,14 +33,12 @@ def log_setup():
 
 def switch_loop(state):
     mainswitch = Button(config.pin_mainswitch)
-    pwr_led = LED(config.pin_powerled, initial_value=False)
     while True:
-        if state["is_awake"]:
-            pwr_led.on()
-        else:
-            pwr_led.off()
         mainswitch.wait_for_press()
-        state["is_awake"] = not state["is_awake"]
+        if state["is_awake"]:
+            urlopen("http://localhost:" + str(config.port) + "/turnoff")
+        else:
+            urlopen("http://localhost:" + str(config.port) + "/turnon")
         sleep(config.time_sample)
 
 
@@ -197,6 +195,8 @@ def server(state):
     log = logging.getLogger("werkzeug")
     log.setLevel(logging.WARNING)
 
+    pwr_led = LED(config.pin_powerled, initial_value=False)
+
     @app.route("/")
     def index():
         return render_template("index.html")
@@ -254,11 +254,13 @@ def server(state):
     @app.route("/turnon", methods=["GET"])
     def turnon():
         state["is_awake"] = True
+        pwr_led.on()
         return "ON"
 
     @app.route("/turnoff", methods=["GET"])
     def turnoff():
         state["is_awake"] = False
+        pwr_led.off()
         return "OFF"
 
     @app.route("/restart")
