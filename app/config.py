@@ -7,7 +7,7 @@ pin_mainswitch = 12
 pin_powerled = 16
 
 # brew temperature in degree celsius
-brew_temp = 96
+brew_temp = 94
 
 # weak-up and sleep times
 schedule = True
@@ -15,7 +15,7 @@ time_wake = "06:50"
 time_sleep = "08:30"
 
 # sample time in seconds and history in iterations
-time_sample = 0.5
+time_sample = 1
 pid_hist_len = 3
 temp_hist_len = 10
 
@@ -25,7 +25,7 @@ pidc_ki = 0
 pidc_kd = 150
 
 # warm PID parameters: proportional, integral and derivative
-pidw_kp = 10
+pidw_kp = 5
 pidw_ki = 0.005
 pidw_kd = 40
 
