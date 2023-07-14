@@ -354,3 +354,10 @@ if __name__ == "__main__":
 
         lasti = curi
         sleep(5)
+
+    logging.error("ERROR IN ONE OF THE THREADS, RESTARTING")
+    logging.info("Restarting...")
+    b.join()
+    p.join()
+    r.join()
+    call(["reboot", "now"])
