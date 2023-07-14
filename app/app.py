@@ -66,7 +66,7 @@ def main_loop(state):
     cpu_t = CPUTemperature()
     heater = LED(config.pin_heat, active_high=True, initial_value=False)
     pwr_led = LED(config.pin_powerled, initial_value=False)
-    spi = SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+    spi = SPI(board.SCLK, MOSI=board.MOSI, MISO=board.MISO)
     cs = DigitalInOut(board.D5)
     sensor = MAX31855(spi, cs)
     pid = PID(

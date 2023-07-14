@@ -6,13 +6,13 @@ authors = ["Alex Müller <alexarnimueller@protonmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.6"
-schedule = "^1.0"
+python = "^3.9"
+schedule = "^1.2"
 board = "^1.0"
-flask = "^1.0"
-simple_pid = "^0.2"
-gpiozero = "^1.5"
-adafruit-max31855 = "1.6.1"
+flask = "^2.3"
+simple_pid = "^2.0"
+gpiozero = "^1.6"
+adafruit-circuitpython-max31855 = "^3.2.19"
 
 [build-system]
 requires = ["poetry-core"]
