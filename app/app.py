@@ -32,7 +32,7 @@ def log_setup():
 
 
 def switch_loop(state):
-    mainswitch = Button(config.pin_mainswitch)
+    mainswitch = Button(config.pin_mainswitch, pull_up=True)
     while True:
         mainswitch.wait_for_press()
         state["is_awake"] = not state["is_awake"]
