@@ -28,7 +28,7 @@ def log_setup():
     log_handler.setFormatter(formatter)
     logger = logging.getLogger()
     logger.addHandler(log_handler)
-    logger.setLevel(logging.WARNING)
+    logger.setLevel(logging.INFO)
 
 
 def switch_loop(state):
@@ -320,7 +320,28 @@ if __name__ == "__main__":
     lasti = pidstate["i"]
     sleep(2)
 
-    while b.is_alive() and p.is_alive() and r.is_alive():  # and s.is_alive() and h.is_alive():
+    while True:
+        if not b.is_alive():
+            b.join()
+            b.terminate()
+            logging.warning("Power button thread off, restarting...")
+            b = Process(target=switch_loop, args=(pidstate,))
+            b.start()
+
+        if not p.is_alive():
+            p.join()
+            p.terminate()
+            logging.warning("PID thread off, restarting...")
+            p = Process(target=main_loop, args=(pidstate,))
+            p.start()
+
+        if not r.is_alive():
+            r.join()
+            r.terminate()
+            logging.warning("Server thread off, restarting...")
+            r = Process(target=server, args=(pidstate,))
+            r.start()
+
         curi = pidstate["i"]
         if curi == lasti:
             piderr += 1
@@ -354,10 +375,3 @@ if __name__ == "__main__":
 
         lasti = curi
         sleep(5)
-
-    logging.error("ERROR IN ONE OF THE THREADS, RESTARTING")
-    logging.info("Restarting...")
-    b.join()
-    p.join()
-    r.join()
-    call(["reboot", "now"])
