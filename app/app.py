@@ -55,10 +55,6 @@ def main_loop(state):
     avgtemp = 25.0
     temp = 25.0
     lastsettemp = state["brewtemp"]
-    iscold = True
-    iswarm = False
-    lastcold = 0
-    lastwarm = 0
     last_wake = 0
     last_sleep = 0
     last_sched_switch = False
@@ -70,9 +66,9 @@ def main_loop(state):
     cs = DigitalInOut(board.D5)
     sensor = MAX31855(spi, cs)
     pid = PID(
-        Kp=config.pidw_kp,
-        Ki=config.pidw_ki,
-        Kd=config.pidw_kd,
+        Kp=config.pidc_kp,
+        Ki=config.pidc_ki,
+        Kd=config.pidc_kd,
         setpoint=state["brewtemp"],
         sample_time=config.time_sample,
     )
@@ -94,20 +90,6 @@ def main_loop(state):
         del temphist[0]
         avgtemp = sum(temphist) / config.temp_hist_len
 
-        if avgtemp <= 70:
-            lastcold = i
-
-        if avgtemp > 70:
-            lastwarm = i
-
-        if iscold and (i - lastcold) * config.time_sample > 300:
-            pid.tunings = (config.pidw_kp, config.pidw_ki, config.pidw_kd)
-            iscold = False
-
-        if iswarm and (i - lastwarm) * config.time_sample > 300:
-            pid.tunings = (config.pidc_kp, config.pidc_ki, config.pidc_kd)
-            iscold = True
-
         if state["brewtemp"] != lastsettemp:
             pid.setpoint = state["brewtemp"]
             lastsettemp = state["brewtemp"]
@@ -122,6 +104,11 @@ def main_loop(state):
         else:
             pwr_led.on()
             # PID logic
+            if avgtemp > pid.setpoint - 25:
+                pid.tunings = (config.pidw_kp, config.pidw_ki, config.pidw_kd)
+            else:
+                pid.tunings = (config.pidc_kp, config.pidc_ki, config.pidc_kd)
+
             pidout = pid(avgtemp)
             pidhist.append(pidout)
             del pidhist[0]
@@ -146,7 +133,6 @@ def main_loop(state):
 
         state["i"] = i
         state["temp"] = temp
-        state["iscold"] = iscold
         state["pterm"], state["iterm"], state["dterm"] = pid.components
         state["avgtemp"] = round(avgtemp, 3)
         state["pidval"] = round(pidout, 3)
@@ -280,70 +266,60 @@ def server(state):
 if __name__ == "__main__":
     log_setup()
     manager = Manager()
-    pidstate = manager.dict()
-    pidstate["is_awake"] = False
-    pidstate["heating"] = False
-    pidstate["sched_enabled"] = config.schedule
-    pidstate["sleep_time"] = config.time_sleep
-    pidstate["wake_time"] = config.time_wake
-    pidstate["brewtemp"] = config.brew_temp
-    pidstate["avgpid"] = 0.0
-    pidstate["i"] = 0
-
-    # logging.info("Starting scheduler thread...")
-    # s = Process(target=scheduler, args=(pidstate,))
-    # s.start()
-
-    logging.info("Starting PID thread...")
-    p = Process(target=main_loop, args=(pidstate,))
-    p.start()
-
-    # logging.info("Starting heat control thread...")
-    # h = Process(target=heating_loop, args=(pidstate,))
-    # h.start()
-
-    logging.info("Starting server thread...")
-    r = Process(target=server, args=(pidstate,))
-    r.start()
-
-    logging.info("Starting power button thread...")
-    b = Process(target=switch_loop, args=(pidstate,))
-    b.start()
-
-    # Start Watchdog loop
-    logging.info("Starting Watchdog...")
+    statedict = manager.dict()
+    statedict["is_awake"] = False
+    statedict["heating"] = False
+    statedict["sched_enabled"] = config.schedule
+    statedict["sleep_time"] = config.time_sleep
+    statedict["wake_time"] = config.time_wake
+    statedict["brewtemp"] = config.brew_temp
+    statedict["avgpid"] = 0.0
+    statedict["i"] = 0
     piderr = 0
     weberr = 0
     cpuhot = 0
     urlhc = "http://localhost:" + str(config.port) + "/healthcheck"
     urloff = "http://localhost:" + str(config.port) + "/turnoff"
 
-    lasti = pidstate["i"]
-    sleep(2)
+    logging.info("Starting PID thread...")
+    p = Process(target=main_loop, args=(statedict,))
+    p.start()
+
+    logging.info("Starting server thread...")
+    r = Process(target=server, args=(statedict,))
+    r.start()
+
+    logging.info("Starting power button thread...")
+    b = Process(target=switch_loop, args=(statedict,))
+    b.start()
+
+    logging.info("Starting Watchdog...")
+    lasti = statedict["i"]
+    sleep(config.watch_thresh * config.time_sample)
 
     while True:
         if not b.is_alive():
             b.join()
             b.terminate()
             logging.warning("Power button thread off, restarting...")
-            b = Process(target=switch_loop, args=(pidstate,))
+            b = Process(target=switch_loop, args=(statedict,))
             b.start()
 
         if not p.is_alive():
             p.join()
             p.terminate()
             logging.warning("PID thread off, restarting...")
-            p = Process(target=main_loop, args=(pidstate,))
+            p = Process(target=main_loop, args=(statedict,))
             p.start()
 
         if not r.is_alive():
             r.join()
             r.terminate()
             logging.warning("Server thread off, restarting...")
-            r = Process(target=server, args=(pidstate,))
+            r = Process(target=server, args=(statedict,))
             r.start()
 
-        curi = pidstate["i"]
+        curi = statedict["i"]
         if curi == lasti:
             piderr += 1
         else:
@@ -356,23 +332,25 @@ if __name__ == "__main__":
         except:
             weberr += 1
 
-        if piderr > int(9 * (1.0 / config.time_sample)):
+        if statedict["cpu"] > config.cpu_threshold:
+            cpuhot += 1
+
+        if cpuhot > config.watch_thresh:
+            logging.error("CPU TOO HOT! SHUTTING DOWN")
+            resp = urlopen(urloff)
+            call(["shutdown", "-h", "now"])
+
+        elif piderr > config.watch_thresh:
             logging.error("ERROR IN PID THREAD, RESTARTING")
             logging.info("Restarting...")
             resp = urlopen(urloff)
             call(["reboot", "now"])
 
-        elif weberr > int(9 * (1.0 / config.time_sample)):
+        elif weberr > config.watch_thresh:
             logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
             logging.info("Restarting...")
+            resp = urlopen(urloff)
             call(["reboot", "now"])
 
-        elif pidstate["cpu"] > config.cpu_threshold:
-            cpuhot += 1
-            if cpuhot > int(30 * (1.0 / config.time_sample)):
-                logging.error("CPU TOO HOT! SHUTTING DOWN")
-                resp = urlopen(urloff)
-                call(["shutdown", "-h", "now"])
-
         lasti = curi
-        sleep(5)
+        sleep(config.watch_thresh * config.time_sample)
