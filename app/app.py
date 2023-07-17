@@ -175,6 +175,7 @@ def main_loop(state):
                 if waketm < sleeptm:
                     if waketm <= nowtm < sleeptm:
                         state["is_awake"] = True
+                        pid.tunings = (config.pidc_kp, config.pidc_ki, config.pidc_kd)
                     else:
                         state["is_awake"] = False
                 elif waketm > sleeptm:
