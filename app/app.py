@@ -48,11 +48,11 @@ def main_loop(state):
     i = 0
     pidout = 1.0
     avgpid = 0.0
-    pidhist = config.pid_hist_len * [0.0]
-    temphist = config.temp_hist_len * [0.0]
-    temperr = config.temp_hist_len * [0]
     avgtemp = 25.0
     temp = 25.0
+    pidhist = config.pid_hist_len * [avgpid]
+    temphist = config.temp_hist_len * [avgtemp]
+    temperr = config.temp_hist_len * [0]
     lastsettemp = state["brewtemp"]
     last_wake = 0
     last_sleep = 0
@@ -99,6 +99,8 @@ def main_loop(state):
             heater.off()
             pwr_led.off()
             state["heating"] = False
+            pidhist = config.pid_hist_len * [0.0]
+            temphist = config.temp_hist_len * [lastsettemp]
             sleep(config.time_sample)
 
         else:
@@ -135,6 +137,7 @@ def main_loop(state):
         pterm, iterm, dterm = pid.components
         if iterm > config.pid_thresh:  # safety check if something goes wrong and i term grows too high
             pid.reset()
+            pterm, iterm, dterm = pid.components
 
         state["i"] = i
         state["temp"] = temp
