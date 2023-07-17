@@ -1,4 +1,3 @@
-import sys
 import time
 from datetime import datetime
 from multiprocessing import Process, Manager
@@ -78,17 +77,18 @@ def main_loop(state):
             temp = sensor.temperature
             del temperr[0]
             temperr.append(0)
+            temphist.append(temp)
+            del temphist[0]
+            avgtemp = sum(temphist) / config.temp_hist_len
         except:
             del temperr[0]
             temperr.append(1)
-        if sum(temperr) >= config.temp_hist_len:
+        if sum(temperr) > config.temp_hist_len:
             logging.error("TEMPERATURE SENSOR ERROR!")
-            state["is_awake"] = False  # turn off
-            sys.exit()
-
-        temphist.append(temp)
-        del temphist[0]
-        avgtemp = sum(temphist) / config.temp_hist_len
+            heater.off()
+            state["is_awake"] = False
+            state["heating"] = False
+            call(["reboot", "now"])
 
         if state["brewtemp"] != lastsettemp:
             pid.setpoint = state["brewtemp"]
@@ -104,10 +104,11 @@ def main_loop(state):
         else:
             pwr_led.on()
             # PID logic
-            if avgtemp > pid.setpoint - 25:
-                pid.tunings = (config.pidw_kp, config.pidw_ki, config.pidw_kd)
-            else:
-                pid.tunings = (config.pidc_kp, config.pidc_ki, config.pidc_kd)
+            if i // config.watch_thresh:
+                if avgtemp > pid.setpoint - config.delta_cold:
+                    pid.tunings = (config.pidw_kp, config.pidw_ki, config.pidw_kd)
+                else:
+                    pid.tunings = (config.pidc_kp, config.pidc_ki, config.pidc_kd)
 
             pidout = pid(avgtemp)
             pidhist.append(pidout)
@@ -131,9 +132,13 @@ def main_loop(state):
                 state["heating"] = False
                 sleep(config.time_sample)
 
+        pterm, iterm, dterm = pid.components
+        if iterm > config.pid_thresh:  # safety check if something goes wrong and i term grows too high
+            pid.reset()
+
         state["i"] = i
         state["temp"] = temp
-        state["pterm"], state["iterm"], state["dterm"] = pid.components
+        state["pterm"], state["iterm"], state["dterm"] = pterm, iterm, dterm
         state["avgtemp"] = round(avgtemp, 3)
         state["pidval"] = round(pidout, 3)
         state["avgpid"] = round(avgpid, 3)
@@ -248,7 +253,7 @@ def server(state):
 
     @app.route("/restart")
     def restart():
-        call(["reboot"])
+        call(["reboot", "now"])
         return "Rebooting..."
 
     @app.route("/shutdown")

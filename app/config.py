@@ -33,6 +33,7 @@ pidw_kd = 40
 pid_thresh = 50.0
 cpu_threshold = 70.0
 watch_thresh = 5
+delta_cold = 25
 
 # port for the web server
 port = 8080
