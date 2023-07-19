@@ -19,15 +19,13 @@ from simple_pid import PID
 
 import config as config
 
-
-def log_setup():
-    log_handler = WatchedFileHandler("run.log")
-    formatter = logging.Formatter("%(asctime)s  - %(levelname)s - %(message)s", "%d-%b-%y %H:%M:%S")
-    formatter.converter = time.gmtime  # if you want UTC time
-    log_handler.setFormatter(formatter)
-    logger = logging.getLogger()
-    logger.addHandler(log_handler)
-    logger.setLevel(logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    filename="run.log",
+    format="%(asctime)s  - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger()
 
 
 def switch_loop(state):
@@ -35,6 +33,7 @@ def switch_loop(state):
     while True:
         mainswitch.wait_for_press()
         state["is_awake"] = not state["is_awake"]
+        logger.info("Power button pressed")
         sleep(config.time_sample)
 
 
@@ -84,14 +83,16 @@ def main_loop(state):
             del temperr[0]
             temperr.append(1)
         if sum(temperr) > config.temp_hist_len:
-            logging.error("TEMPERATURE SENSOR ERROR!")
+            logger.error("TEMPERATURE SENSOR ERROR!")
             heater.off()
             state["is_awake"] = False
             state["heating"] = False
+            logger.info("Rebooting...")
             call(["reboot", "now"])
 
         if state["brewtemp"] != lastsettemp:
             pid.setpoint = state["brewtemp"]
+            logger.info(f"Temperature setpoint changed from {lastsettemp} to {pid.setpoint}")
             lastsettemp = state["brewtemp"]
 
         # check if work to do
@@ -136,6 +137,7 @@ def main_loop(state):
 
         pterm, iterm, dterm = pid.components
         if iterm > config.pid_thresh:  # safety check if something goes wrong and i term grows too high
+            logger.warning("I term has become too large, resetting PID values")
             pid.reset()
             pterm, iterm, dterm = pid.components
 
@@ -169,7 +171,6 @@ def main_loop(state):
                 if waketm < sleeptm:
                     if waketm <= nowtm < sleeptm:
                         state["is_awake"] = True
-                        pid.tunings = (config.pidc_kp, config.pidc_ki, config.pidc_kd)
                     else:
                         state["is_awake"] = False
                 elif waketm > sleeptm:
@@ -272,7 +273,6 @@ def server(state):
 
 
 if __name__ == "__main__":
-    log_setup()
     manager = Manager()
     statedict = manager.dict()
     statedict["is_awake"] = False
@@ -289,19 +289,19 @@ if __name__ == "__main__":
     urlhc = "http://localhost:" + str(config.port) + "/healthcheck"
     urloff = "http://localhost:" + str(config.port) + "/turnoff"
 
-    logging.info("Starting PID thread...")
+    logger.info("Starting PID thread...")
     p = Process(target=main_loop, args=(statedict,))
     p.start()
 
-    logging.info("Starting server thread...")
+    logger.info("Starting server thread...")
     r = Process(target=server, args=(statedict,))
     r.start()
 
-    logging.info("Starting power button thread...")
+    logger.info("Starting power button thread...")
     b = Process(target=switch_loop, args=(statedict,))
     b.start()
 
-    logging.info("Starting Watchdog...")
+    logger.info("Starting Watchdog...")
     lasti = statedict["i"]
     sleep(config.watch_thresh * config.time_sample)
 
@@ -309,27 +309,28 @@ if __name__ == "__main__":
         if not b.is_alive():
             b.join()
             b.terminate()
-            logging.warning("Power button thread off, restarting...")
+            logger.warning("Power button thread not alive, restarting thread...")
             b = Process(target=switch_loop, args=(statedict,))
             b.start()
 
         if not p.is_alive():
             p.join()
             p.terminate()
-            logging.warning("PID thread off, restarting...")
+            logger.warning("PID thread not alive, restarting thread...")
             p = Process(target=main_loop, args=(statedict,))
             p.start()
 
         if not r.is_alive():
             r.join()
             r.terminate()
-            logging.warning("Server thread off, restarting...")
+            logger.warning("Server thread not alive, restarting thread...")
             r = Process(target=server, args=(statedict,))
             r.start()
 
         curi = statedict["i"]
         if curi == lasti:
             piderr += 1
+            logger.warning(f"PID err {piderr}")
         else:
             piderr = 0
 
@@ -337,26 +338,28 @@ if __name__ == "__main__":
             hc = urlopen(urlhc)
             if hc.getcode() != 200:
                 weberr += 1
+                logger.warning(f"weberr {weberr}")
         except:
             weberr += 1
 
         if statedict["cpu"] > config.cpu_threshold:
             cpuhot += 1
+            logger.warning(f"cpu hot {cpuhot}")
 
         if cpuhot > config.watch_thresh:
-            logging.error("CPU TOO HOT! SHUTTING DOWN")
+            logger.error("CPU TOO HOT! SHUTTING DOWN")
             resp = urlopen(urloff)
             call(["shutdown", "-h", "now"])
 
         elif piderr > config.watch_thresh:
-            logging.error("ERROR IN PID THREAD, RESTARTING")
-            logging.info("Restarting...")
+            logger.error("ERROR IN PID THREAD, RESTARTING")
+            logger.info("Restarting...")
             resp = urlopen(urloff)
             call(["reboot", "now"])
 
         elif weberr > config.watch_thresh:
-            logging.error("ERROR IN WEB SERVER THREAD, RESTARTING")
-            logging.info("Restarting...")
+            logger.error("ERROR IN WEB SERVER THREAD, RESTARTING")
+            logger.info("Restarting...")
             resp = urlopen(urloff)
             call(["reboot", "now"])
 
