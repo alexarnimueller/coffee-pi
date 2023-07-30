@@ -1,4 +1,3 @@
-import time
 from datetime import datetime
 from multiprocessing import Process, Manager
 from subprocess import call
@@ -6,7 +5,6 @@ from time import sleep
 
 from urllib.request import urlopen
 import logging
-from logging.handlers import WatchedFileHandler
 
 import board
 import schedule
@@ -15,9 +13,12 @@ from busio import SPI
 from digitalio import DigitalInOut
 from flask import Flask, flash, redirect, jsonify, request, render_template, abort
 from gpiozero import LED, CPUTemperature, Button
+
 from simple_pid import PID
+import RPi.GPIO as GPIO
 
 import config as config
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,11 +31,18 @@ logger = logging.getLogger()
 
 
 def switch_loop(state):
-    mainswitch = Button(config.pin_mainswitch, pull_up=True)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(config.pin_mainswitch, GPIO.IN, GPIO.PUD_UP)
+    old_state = GPIO.HIGH
+    # mainswitch = Button(config.pin_mainswitch, pull_up=True)
     while True:
-        mainswitch.wait_for_press()
-        state["is_awake"] = not state["is_awake"]
-        logger.info("Power button pressed")
+        # mainswitch.wait_for_press()
+        new_state = GPIO.input(config.pin_mainswitch)
+        if new_state != old_state:
+            state["is_awake"] = not state["is_awake"]
+            logger.info("Power button pressed")
+        old_state = new_state
         sleep(config.time_sample)
 
 
