@@ -39,6 +39,7 @@ def switch_loop(state):
     while True:
         # mainswitch.wait_for_press()
         button_state = GPIO.input(config.pin_mainswitch)
+        sleep(0.05)  # avoid jitter
         if button_state != GPIO.HIGH:
             state["is_awake"] = not state["is_awake"]
             logger.info("Power button pressed")
