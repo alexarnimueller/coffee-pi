@@ -31,18 +31,16 @@ logger = logging.getLogger()
 
 
 def switch_loop(state):
+    def callback():
+        state["is_awake"] = not state["is_awake"]
+        logger.info("Power button pressed")
+
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
-    GPIO.setup(config.pin_mainswitch, GPIO.IN, GPIO.PUD_UP)
-    old_state = GPIO.HIGH
-    # mainswitch = Button(config.pin_mainswitch, pull_up=True)
+    GPIO.setup(config.pin_mainswitch, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(config.pin_mainswitch, GPIO.FALLING, callback=callback, bouncetime=100)
+
     while True:
-        # mainswitch.wait_for_press()
-        button_state = GPIO.input(config.pin_mainswitch)
-        sleep(0.05)  # avoid jitter
-        if button_state != GPIO.HIGH:
-            state["is_awake"] = not state["is_awake"]
-            logger.info("Power button pressed")
         sleep(config.time_sample)
 
 
