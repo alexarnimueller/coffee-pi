@@ -31,7 +31,7 @@ logger = logging.getLogger()
 
 
 def switch_loop(state):
-    def callback():
+    def callback(channel):
         state["is_awake"] = not state["is_awake"]
         logger.info("Power button pressed")
 
