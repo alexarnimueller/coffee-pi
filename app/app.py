@@ -42,7 +42,7 @@ def switch_loop(state):
         if new_state != old_state:
             state["is_awake"] = not state["is_awake"]
             logger.info("Power button pressed")
-        old_state = new_state
+            old_state = new_state
         sleep(config.time_sample)
 
 
