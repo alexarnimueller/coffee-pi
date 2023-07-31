@@ -13,6 +13,8 @@ from busio import SPI
 from digitalio import DigitalInOut
 from flask import Flask, flash, redirect, jsonify, request, render_template, abort
 from gpiozero import LED, CPUTemperature, Button
+import RPi.GPIO as GPIO
+
 
 from simple_pid import PID
 
@@ -30,12 +32,16 @@ logger = logging.getLogger()
 
 
 def switch_loop(state):
-    mainswitch = Button(config.pin_mainswitch, pull_up=True, bounce_time=0.3)
-    logger.info("Button initialized, waiting for press...")
-    while True:
-        mainswitch.wait_for_press()
+    def callback(channel):
         state["is_awake"] = not state["is_awake"]
         logger.info("Power button pressed")
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(config.pin_mainswitch, GPIO.IN)
+    GPIO.add_event_detect(config.pin_mainswitch, GPIO.FALLING, callback=callback, bouncetime=400)
+
+    while True:
         sleep(config.time_sample)
 
 
