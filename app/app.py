@@ -30,7 +30,7 @@ logger = logging.getLogger()
 
 
 def switch_loop(state):
-    mainswitch = Button(config.pin_mainswitch, pull_up=False, bounce_time=0.3)
+    mainswitch = Button(config.pin_mainswitch, pull_up=True, bounce_time=0.3)
     logger.info("Button initialized, waiting for press...")
     while True:
         mainswitch.wait_for_press()
