@@ -36,7 +36,7 @@ def switch_loop(state):
     logger.info("Button initialized, waiting for press...")
     while True:
         mainswitch.wait_for_press()
-        if mainswitch.active_time > 0.2:
+        if mainswitch.pressed_time > 0.15:
             state["is_awake"] = not state["is_awake"]
             logger.info("Power button pressed")
         sleep(config.time_sample)
