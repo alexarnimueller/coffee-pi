@@ -35,12 +35,12 @@ def switch_loop(state):
     mainswitch = Button(config.pin_mainswitch, pull_up=False, bounce_time=0.3)
     logger.info("Button initialized, waiting for press...")
     while True:
-        mainswitch.wait_for_press()
-        sleep(0.25)  # avoid jitter / interference
         if mainswitch.is_pressed:
-            state["is_awake"] = not state["is_awake"]
-            logger.info("Power button pressed")
-        sleep(config.time_sample)
+            sleep(0.2)  # avoid jitter / interference
+            if mainswitch.is_pressed:
+                state["is_awake"] = not state["is_awake"]
+                logger.info("Power button pressed")
+        sleep(max(0.001, 0.2 - config.time_sample))
 
 
 def main_loop(state):
